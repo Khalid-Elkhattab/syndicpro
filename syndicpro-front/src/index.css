@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a5b4fc;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+  --color-brand-950: #1e1b4b;
+
+  --color-accent-50: #fffbeb;
+  --color-accent-100: #fef3c7;
+  --color-accent-200: #fde68a;
+  --color-accent-300: #fcd34d;
+  --color-accent-400: #fbbf24;
+  --color-accent-500: #f59e0b;
+  --color-accent-600: #d97706;
+  --color-accent-700: #b45309;
+  --color-accent-800: #92400e;
+  --color-accent-900: #78350f;
+
+  --color-surface: #ffffff;
+  --color-surface-50: #f8fafc;
+  --color-surface-100: #f1f5f9;
+  --color-surface-200: #e2e8f0;
+  --color-surface-300: #cbd5e1;
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+  --color-text-inverse: #ffffff;
+
+  --color-success-light: #dcfce7;
+  --color-success: #16a34a;
+  --color-success-dark: #15803d;
+
+  --color-warning-light: #fef9c3;
+  --color-warning: #ca8a04;
+  --color-warning-dark: #a16207;
+
+  --color-danger-light: #fee2e2;
+  --color-danger: #dc2626;
+  --color-danger-dark: #b91c1c;
+
+  --color-info-light: #dbeafe;
+  --color-info: #2563eb;
+  --color-info-dark: #1d4ed8;
+
+  --color-statut-paye: #16a34a;
+  --color-statut-partiel: #ca8a04;
+  --color-statut-impaye: #dc2626;
+  --color-statut-nouveau: #2563eb;
+  --color-statut-en_cours: #d97706;
+  --color-statut-traite: #16a34a;
+  --color-statut-rejete: #6b7280;
+
+  --font-sans: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+  }
+}

@@ -1,0 +1,11 @@
+.env
+.env.production
+.env.local
+node_modules/
+vendor/
+dist/
+dist-ssr/
+.idea/
+.vscode/
+*.log
+.DS_Store
