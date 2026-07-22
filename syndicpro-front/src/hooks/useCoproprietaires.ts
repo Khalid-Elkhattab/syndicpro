@@ -22,12 +22,12 @@ export const useCoproprietaire = (id: number) =>
     queryKey: ['coproprietaires', id],
     queryFn: async () => {
       const { data } = await coproprietairesApi.show(id);
-      return data.data as User & {
+      return (data.data ?? null) as (User & {
         appartements?: { id: number; numero: string; etage: number; residence?: { nom: string }; immeuble?: { nom: string } }[];
         cotisation_details?: { id: number; montant: number; montant_paye: number; montant_restant: number; statut: string; appartement?: { numero: string } }[];
         paiements?: { id: number; montant: number; date_paiement: string; mode_paiement: string; reference: string | null }[];
         reclamations?: { id: number; titre: string; statut: string; priorite: string; created_at: string; residence?: { nom: string }; appartement?: { numero: string } }[];
-      };
+      }) | null;
     },
     enabled: !!id,
   });

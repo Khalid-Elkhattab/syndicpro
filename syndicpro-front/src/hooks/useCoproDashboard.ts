@@ -6,6 +6,6 @@ export const useCoproDashboard = () =>
     queryKey: ['copro', 'dashboard'],
     queryFn: async () => {
       const { data } = await dashboardApi.getCoproDashboard();
-      return data.data as CoproDashboardData;
+      return (data.data ?? null) as CoproDashboardData | null;
     },
   });

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useEffect, useCallback } from 'react';
 
@@ -14,7 +13,6 @@ interface ModalProps {
 
 export function Modal({ isOpen, onClose, title, size = 'md', children, footer }: ModalProps) {
   const [isClosing, setIsClosing] = useState(false);
-  const shouldReduceMotion = useReducedMotion();
 
   const handleClose = useCallback(() => {
     setIsClosing(true);
@@ -52,48 +50,38 @@ export function Modal({ isOpen, onClose, title, size = 'md', children, footer }:
   if (!isOpen && !isClosing) return null;
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.25 }}
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-200 ${isClosing ? 'opacity-0' : 'opacity-100'}`}
+        onClick={handleClose}
+      />
+      <div
+        className={`relative w-full ${widthClass} bg-white rounded-xl shadow-modal transition-all duration-200 ${
+          isClosing ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'
+        }`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
+        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-200">
+          <h2 id="modal-title" className="text-lg font-semibold text-text-primary">{title}</h2>
+          <button
             onClick={handleClose}
-          />
-          <motion.div
-            initial={shouldReduceMotion ? {} : { opacity: 0, y: 40, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={shouldReduceMotion ? {} : { opacity: 0, y: 40, scale: 0.95 }}
-            transition={shouldReduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 28 }}
-            className={`relative w-full ${widthClass} bg-white rounded-xl shadow-modal`}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-title"
+            className="p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-100 transition-colors"
+            aria-label="Fermer"
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-surface-200">
-              <h2 id="modal-title" className="text-lg font-semibold text-text-primary">{title}</h2>
-              <button
-                onClick={handleClose}
-                className="p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-100 transition-colors"
-                aria-label="Fermer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
-              {children}
-            </div>
-            {footer && (
-              <div className="px-6 py-4 border-t border-surface-200 flex justify-end gap-3">
-                {footer}
-              </div>
-            )}
-          </motion.div>
+            <X className="w-5 h-5" />
+          </button>
         </div>
-      )}
-    </AnimatePresence>
+        <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
+          {children}
+        </div>
+        {footer && (
+          <div className="px-6 py-4 border-t border-surface-200 flex justify-end gap-3">
+            {footer}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

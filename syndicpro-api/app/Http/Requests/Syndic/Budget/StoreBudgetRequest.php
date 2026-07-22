@@ -14,7 +14,7 @@ class StoreBudgetRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'compte_charge_id' => 'required|integer|exists:comptes_charges,id',
+            'compte_charge_id' => 'required|integer|exists:compte_charges,id',
             'montant_prevu' => 'required|numeric|min:0|max:999999999.99',
         ];
     }

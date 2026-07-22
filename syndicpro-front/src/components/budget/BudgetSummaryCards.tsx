@@ -1,4 +1,5 @@
-import { motion, useReducedMotion } from 'framer-motion';
+import { memo } from 'react';
+import { motion, useReducedMotion } from '@/lib/motion';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { EmptyState } from '@/components/ui/EmptyState';
 import type { BudgetSummary } from '@/api/budget.api';
@@ -8,7 +9,7 @@ interface BudgetSummaryCardsProps {
   isLoading: boolean;
 }
 
-export function BudgetSummaryCards({ summary, isLoading }: BudgetSummaryCardsProps) {
+export const BudgetSummaryCards = memo(function BudgetSummaryCards({ summary, isLoading }: BudgetSummaryCardsProps) {
   const shouldReduceMotion = useReducedMotion();
   if (isLoading) {
     return (
@@ -56,12 +57,12 @@ export function BudgetSummaryCards({ summary, isLoading }: BudgetSummaryCardsPro
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      {cards.map((card, index) => (
+      {cards.map((card) => (
         <motion.div
           key={card.label}
           initial={shouldReduceMotion ? {} : { opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={shouldReduceMotion ? { duration: 0 } : { delay: index * 0.1 }}
+          transition={shouldReduceMotion ? { duration: 0 } : { delay: 0 }}
           className={`bg-white rounded-xl shadow-card p-6 ${card.bg}`}
         >
           <p className="text-sm font-medium text-text-secondary mb-1">{card.label}</p>
@@ -72,4 +73,4 @@ export function BudgetSummaryCards({ summary, isLoading }: BudgetSummaryCardsPro
       ))}
     </div>
   );
-}
+});

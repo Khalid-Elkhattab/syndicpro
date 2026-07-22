@@ -15,8 +15,9 @@ class UpdateCompteChargeRequest extends FormRequest
 
     public function rules(): array
     {
-        $compteChargeId = $this->route('compte_charge');
-        $residenceId = $this->route('residence');
+        $compteChargeId = $this->route('comptes_charge');
+        $compteCharge = \App\Models\CompteCharge::find($compteChargeId);
+        $residenceId = $compteCharge?->residence_id;
 
         return [
             'nom' => [
@@ -24,7 +25,7 @@ class UpdateCompteChargeRequest extends FormRequest
                 'required',
                 'string',
                 'max:150',
-                Rule::unique('comptes_charges', 'nom')
+                Rule::unique('compte_charges', 'nom')
                     ->where('residence_id', $residenceId)
                     ->ignore($compteChargeId),
             ],

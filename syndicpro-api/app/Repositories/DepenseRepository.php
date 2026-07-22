@@ -17,16 +17,18 @@ class DepenseRepository extends BaseRepository
     public function findByResidence(int $residenceId, array $filters = []): LengthAwarePaginator
     {
         $query = $this->model
-            ->where('residence_id', $residenceId)
+            ->where('depenses.residence_id', $residenceId)
             ->with(['sousCharge.compteCharge'])
-            ->orderByDesc('date');
+            ->orderByDesc('depenses.date');
 
         if (!empty($filters['sous_charge_id'])) {
             $query->where('sous_charge_id', $filters['sous_charge_id']);
         }
 
         if (!empty($filters['compte_charge_id'])) {
-            $query->whereHas('sousCharge', fn($q) => $q->where('compte_charge_id', $filters['compte_charge_id']));
+            $query->join('sous_charges', 'depenses.sous_charge_id', '=', 'sous_charges.id')
+                  ->where('sous_charges.compte_charge_id', $filters['compte_charge_id'])
+                  ->select('depenses.*');
         }
 
         if (!empty($filters['date_debut'])) {
@@ -44,26 +46,40 @@ class DepenseRepository extends BaseRepository
 
     public function sumByCompteCharge(int $compteChargeId, int $periodeId): float
     {
+        $residenceId = \App\Models\Periode::where('id', $periodeId)->value('residence_id');
+
+        if (!$residenceId) {
+            return 0;
+        }
+
         return (float) $this->model
-            ->whereHas('sousCharge', fn($q) => $q->where('compte_charge_id', $compteChargeId))
-            ->where('residence_id', fn($q) => $q->select('id')->from('periodes')->where('id', $periodeId)->value('residence_id'))
-            ->whereHas('residence.periodes', fn($q) => $q->where('id', $periodeId)->where('is_active', true))
-            ->sum('montant');
+            ->join('sous_charges', 'depenses.sous_charge_id', '=', 'sous_charges.id')
+            ->where('sous_charges.compte_charge_id', $compteChargeId)
+            ->where('depenses.residence_id', $residenceId)
+            ->sum('depenses.montant');
     }
 
     public function sumBySousCharge(int $sousChargeId, int $periodeId): float
     {
+        $residenceId = \App\Models\Periode::where('id', $periodeId)->value('residence_id');
+
+        if (!$residenceId) {
+            return 0;
+        }
+
         return (float) $this->model
             ->where('sous_charge_id', $sousChargeId)
-            ->whereHas('residence.periodes', fn($q) => $q->where('id', $periodeId)->where('is_active', true))
+            ->where('residence_id', $residenceId)
             ->sum('montant');
     }
 
     public function getBySousChargeForPeriode(int $sousChargeId, int $periodeId): Collection
     {
+        $residenceId = \App\Models\Periode::where('id', $periodeId)->value('residence_id');
+
         return $this->model
             ->where('sous_charge_id', $sousChargeId)
-            ->whereHas('residence.periodes', fn($q) => $q->where('id', $periodeId))
+            ->where('residence_id', $residenceId)
             ->with(['sousCharge.compteCharge'])
             ->orderByDesc('date')
             ->get();

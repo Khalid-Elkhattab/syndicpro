@@ -31,21 +31,18 @@ class DashboardController extends Controller
         $currentYear = now()->year;
 
         $montantDuCeMois = CotisationDetail::where('coproprietaire_id', $userId)
-            ->whereHas('cotisation', function ($q) use ($currentMonth, $currentYear) {
-                $q->where('mois', $currentMonth)
-                  ->where('annee', $currentYear)
-                  ->where('type', 'fixe');
-            })
-            ->where('statut', '!=', CotisationDetailStatut::Paye)
-            ->sum('montant');
+            ->join('cotisations', 'cotisation_details.cotisation_id', '=', 'cotisations.id')
+            ->where('cotisations.mois', $currentMonth)
+            ->where('cotisations.annee', $currentYear)
+            ->where('cotisations.type', 'fixe')
+            ->where('cotisation_details.statut', '!=', CotisationDetailStatut::Paye)
+            ->sum('cotisation_details.montant');
 
-        $totalImpayes = CotisationDetail::where('coproprietaire_id', $userId)
+        $impayesAgg = CotisationDetail::where('coproprietaire_id', $userId)
             ->whereIn('statut', [CotisationDetailStatut::NonPaye, CotisationDetailStatut::PartiellementPaye])
-            ->sum(DB::raw('montant - montant_paye'));
-
-        $nbImpayes = CotisationDetail::where('coproprietaire_id', $userId)
-            ->whereIn('statut', [CotisationDetailStatut::NonPaye, CotisationDetailStatut::PartiellementPaye])
-            ->count();
+            ->selectRaw('COALESCE(SUM(montant - montant_paye), 0) as total_impayes')
+            ->selectRaw('COUNT(*) as nb_impayes')
+            ->first();
 
         $dernierPaiement = Paiement::where('coproprietaire_id', $userId)
             ->orderByDesc('date_paiement')
@@ -88,8 +85,8 @@ class DashboardController extends Controller
 
         return ApiResponse::success([
             'montant_du_ce_mois' => (float) $montantDuCeMois,
-            'total_impayes' => (float) $totalImpayes,
-            'nb_impayes' => $nbImpayes,
+            'total_impayes' => (float) ($impayesAgg->total_impayes ?? 0),
+            'nb_impayes' => (int) ($impayesAgg->nb_impayes ?? 0),
             'dernier_paiement' => $dernierPaiement ? [
                 'date' => $dernierPaiement->date_paiement?->format('d/m/Y'),
                 'montant' => (float) $dernierPaiement->montant,

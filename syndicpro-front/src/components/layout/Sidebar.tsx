@@ -1,4 +1,3 @@
-import { motion, useReducedMotion } from 'framer-motion';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +20,6 @@ export function Sidebar({ navigation }: SidebarProps) {
   const clearUser = useAuthStore((s) => s.clearUser);
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const navigate = useNavigate();
-  const shouldReduceMotion = useReducedMotion();
 
   const handleLogout = async () => {
     try {
@@ -33,21 +31,19 @@ export function Sidebar({ navigation }: SidebarProps) {
   };
 
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: sidebarCollapsed ? 64 : 240 }}
-      transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-      className="bg-brand-950 text-white flex flex-col h-screen flex-shrink-0"
+    <aside
+      className="bg-brand-950 text-white flex flex-col h-screen flex-shrink-0 overflow-hidden"
+      style={{ width: sidebarCollapsed ? 64 : 240, transition: 'width 250ms ease-out', willChange: 'width' }}
     >
-      <div className="p-4 flex items-center justify-between border-b border-brand-800 h-16">
+      <div className="p-4 flex items-center justify-between border-b border-brand-800 h-16 min-w-0">
         {!sidebarCollapsed && (
-          <span className="text-xl font-bold whitespace-nowrap">
+          <span className="text-xl font-bold whitespace-nowrap overflow-hidden">
             Syndic<span className="text-accent-500">Pro</span>
           </span>
         )}
         <button
           onClick={toggleSidebar}
-          className="p-1.5 rounded-lg hover:bg-brand-800 transition-colors text-brand-300 hover:text-white ml-auto"
+          className="p-1.5 rounded-lg hover:bg-brand-800 transition-colors text-brand-300 hover:text-white ml-auto flex-shrink-0"
           aria-label={sidebarCollapsed ? 'Déplier le menu' : 'Replier le menu'}
         >
           {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -58,7 +54,7 @@ export function Sidebar({ navigation }: SidebarProps) {
 
       <SidebarNav items={navigation} collapsed={sidebarCollapsed} />
 
-      <div className="p-4 border-t border-brand-800">
+      <div className="p-4 border-t border-brand-800 mt-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center min-w-0">
             <div className="w-8 h-8 bg-brand-700 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
@@ -74,7 +70,7 @@ export function Sidebar({ navigation }: SidebarProps) {
           {!sidebarCollapsed && (
             <button
               onClick={handleLogout}
-              className="p-1.5 rounded-lg text-brand-300 hover:text-white hover:bg-brand-800 transition-colors"
+              className="p-1.5 rounded-lg text-brand-300 hover:text-white hover:bg-brand-800 transition-colors flex-shrink-0"
               aria-label="Déconnexion"
             >
               <LogOut className="w-4 h-4" />
@@ -82,6 +78,6 @@ export function Sidebar({ navigation }: SidebarProps) {
           )}
         </div>
       </div>
-    </motion.aside>
+    </aside>
   );
 }

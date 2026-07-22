@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Edit2, Trash2, UserPlus, DoorOpen } from 'lucide-react';
+import { useResidenceStore } from '@/store/residenceStore';
 import { useResidences } from '@/hooks/useResidences';
 import { useImmeubles } from '@/hooks/useImmeubles';
 import { useAppartements, useCreateAppartement, useUpdateAppartement, useAssignerAppartement, useDeleteAppartement } from '@/hooks/useAppartements';
@@ -13,19 +14,19 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { DataTable } from '@/components/ui/DataTable';
 import { appartementSchema, type AppartementFormData } from '@/utils/schemas';
 import { ErrorState } from '@/components/ui/ErrorState';
-import type { Appartement, User } from '@/types/entities.types';
+import type { Appartement } from '@/types/entities.types';
 
 export default function AppartementsPage() {
-  const { data: residences } = useResidences();
+  const { activeResidence } = useResidenceStore();
+  const residenceId = activeResidence?.id;
   const { data: residencesList } = useResidences();
-  const [filterResidence, setFilterResidence] = useState<number | undefined>();
   const [filterImmeuble, setFilterImmeuble] = useState<number | undefined>();
 
-  const { data: allImmeubles } = useImmeubles(filterResidence ?? 0);
+  const { data: allImmeubles } = useImmeubles(residenceId ?? 0);
   const { data: coproprietaires } = useCoproprietaires();
 
   const { data: appartements, isLoading, isError, refetch } = useAppartements(
-    filterResidence,
+    residenceId,
     { ...(filterImmeuble ? { immeuble_id: filterImmeuble } : {}) }
   );
   const createMutation = useCreateAppartement();
@@ -42,21 +43,21 @@ export default function AppartementsPage() {
   const [assignerId, setAssignerId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register, handleSubmit, reset, formState: { errors }, watch } = useForm<AppartementFormData>({
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<AppartementFormData>({
     resolver: zodResolver(appartementSchema),
   });
 
   const selectedResidenceId = watch('residence_id');
-  const selectedImmeubleId = watch('immeuble_id');
   const filteredImmeubles = selectedResidenceId
     ? (allImmeubles ?? []).filter((i) => i.residence_id === selectedResidenceId)
     : [];
 
+  const defaultResidenceId = residenceId ?? 0;
   const openCreate = () => {
     setEditing(null);
     reset({
-      residence_id: filterResidence ?? 0,
-      immeuble_id: filterImmeuble ?? 0,
+      residence_id: defaultResidenceId,
+      immeuble_id: 0,
       numero: '',
       etage: 0,
       tantieme: 0,
@@ -80,9 +81,9 @@ export default function AppartementsPage() {
     setIsSubmitting(true);
     try {
       if (editing) {
-        await updateMutation.mutateAsync({ id: editing.id, ...payload });
+        await updateMutation.mutateAsync({ id: editing.id, numero: payload.numero, etage: payload.etage, tantieme: payload.tantieme });
       } else {
-        await createMutation.mutateAsync(payload);
+        await createMutation.mutateAsync({ ...payload, coproprietaire_id: payload.coproprietaire_id ?? undefined });
       }
       setIsModalOpen(false);
     } finally {
@@ -167,15 +168,10 @@ export default function AppartementsPage() {
       </div>
 
       <div className="mb-4 flex items-center gap-3 flex-wrap">
-        <select value={filterResidence ?? ''} onChange={(e) => { setFilterResidence(e.target.value ? Number(e.target.value) : undefined); setFilterImmeuble(undefined); }}
-          className="px-3 py-1.5 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none">
-          <option value="">Toutes résidences</option>
-          {residences?.map((r) => <option key={r.id} value={r.id}>{r.nom}</option>)}
-        </select>
         <select value={filterImmeuble ?? ''} onChange={(e) => setFilterImmeuble(e.target.value ? Number(e.target.value) : undefined)}
           className="px-3 py-1.5 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none">
           <option value="">Tous immeubles</option>
-          {(allImmeubles ?? []).filter((i) => !filterResidence || i.residence_id === filterResidence).map((i) => <option key={i.id} value={i.id}>{i.nom}</option>)}
+          {(allImmeubles ?? []).filter((i) => !residenceId || i.residence_id === residenceId).map((i) => <option key={i.id} value={i.id}>{i.nom}</option>)}
         </select>
       </div>
 

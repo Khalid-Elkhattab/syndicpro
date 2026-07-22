@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { compteChargeApi } from '@/api/compteCharge.api';
 import { sousChargeApi } from '@/api/sousCharge.api';
-import type { ApiResponse } from '@/types/api.types';
+
 import type { CompteCharge, SousCharge } from '@/types/entities.types';
 
 export const useCompteCharges = (residenceId: number) =>
@@ -9,7 +9,7 @@ export const useCompteCharges = (residenceId: number) =>
     queryKey: ['compteCharges', residenceId],
     queryFn: async () => {
       const { data } = await compteChargeApi.index(residenceId);
-      return data.data as CompteCharge[];
+      return (data.data ?? []) as CompteCharge[];
     },
     enabled: !!residenceId,
   });
@@ -26,8 +26,10 @@ export const useCreateCompteCharge = () => {
       description?: string;
       is_active?: boolean;
     }) => compteChargeApi.store(residenceId, payload),
-    onSuccess: (_, { residenceId }) =>
-      qc.invalidateQueries({ queryKey: ['compteCharges', residenceId] }),
+    onSuccess: (_, { residenceId }) => {
+      qc.invalidateQueries({ queryKey: ['compteCharges', residenceId] });
+      qc.invalidateQueries({ queryKey: ['budget', 'summary'] });
+    },
   });
 };
 
@@ -35,7 +37,7 @@ export const useUpdateCompteCharge = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
-      residenceId,
+      residenceId: _residenceId,
       id,
       ...payload
     }: {
@@ -44,7 +46,7 @@ export const useUpdateCompteCharge = () => {
       nom?: string;
       description?: string;
       is_active?: boolean;
-    }) => compteChargeApi.update(residenceId, id, payload),
+    }) => compteChargeApi.update(id, payload),
     onSuccess: (_, { residenceId }) =>
       qc.invalidateQueries({ queryKey: ['compteCharges', residenceId] }),
   });
@@ -53,10 +55,12 @@ export const useUpdateCompteCharge = () => {
 export const useDeleteCompteCharge = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ residenceId, id }: { residenceId: number; id: number }) =>
-      compteChargeApi.destroy(residenceId, id),
-    onSuccess: (_, { residenceId }) =>
-      qc.invalidateQueries({ queryKey: ['compteCharges', residenceId] }),
+    mutationFn: ({ residenceId: _residenceId, id }: { residenceId: number; id: number }) =>
+      compteChargeApi.destroy(id),
+    onSuccess: (_, { residenceId }) => {
+      qc.invalidateQueries({ queryKey: ['compteCharges', residenceId] });
+      qc.invalidateQueries({ queryKey: ['budget', 'summary'] });
+    },
   });
 };
 
@@ -65,7 +69,7 @@ export const useSousChargesByResidence = (residenceId: number) =>
     queryKey: ['sousCharges', 'residence', residenceId],
     queryFn: async () => {
       const { data } = await sousChargeApi.indexByResidence(residenceId);
-      return data.data as SousCharge[];
+      return (data.data ?? []) as SousCharge[];
     },
     enabled: !!residenceId,
   });
@@ -75,7 +79,7 @@ export const useCreateSousCharge = () => {
   return useMutation({
     mutationFn: ({
       compteChargeId,
-      residenceId,
+      residenceId: _residenceId,
       ...payload
     }: {
       compteChargeId: number;
@@ -92,9 +96,9 @@ export const useUpdateSousCharge = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
-      compteChargeId,
+      compteChargeId: _compteChargeId,
       id,
-      residenceId,
+      residenceId: _residenceId,
       ...payload
     }: {
       compteChargeId: number;
@@ -102,7 +106,7 @@ export const useUpdateSousCharge = () => {
       residenceId: number;
       nom?: string;
       description?: string;
-    }) => sousChargeApi.update(compteChargeId, id, payload),
+    }) => sousChargeApi.update(id, payload),
     onSuccess: (_, { residenceId }) =>
       qc.invalidateQueries({ queryKey: ['sousCharges', 'residence', residenceId] }),
   });
@@ -112,14 +116,14 @@ export const useDeleteSousCharge = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
-      compteChargeId,
+      compteChargeId: _compteChargeId,
       id,
-      residenceId,
+      residenceId: _residenceId,
     }: {
       compteChargeId: number;
       id: number;
       residenceId: number;
-    }) => sousChargeApi.destroy(compteChargeId, id),
+    }) => sousChargeApi.destroy(id),
     onSuccess: (_, { residenceId }) =>
       qc.invalidateQueries({ queryKey: ['sousCharges', 'residence', residenceId] }),
   });

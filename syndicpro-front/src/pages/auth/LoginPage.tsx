@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/authStore';
 import { axiosInstance } from '@/api/axiosInstance';
 
@@ -35,9 +34,9 @@ export default function LoginPage() {
       const response = await axiosInstance.post('/api/auth/login', data);
       if (response.data.success) {
         setUser(response.data.data.user);
-        window.location.href = response.data.data.user.role === 'syndic'
+        window.location.assign(response.data.data.user.role === 'syndic'
           ? '/syndic/dashboard'
-          : '/coproprietaires/dashboard';
+          : '/coproprietaires/dashboard');
       }
     } catch (err: unknown) {
       const errorResponse = err as { response?: { data?: { message?: string } } };
@@ -62,23 +61,14 @@ export default function LoginPage() {
       </div>
 
       <div className="flex-1 flex items-center justify-center p-8 bg-surface-50">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="w-full max-w-md"
-        >
+        <div className="w-full max-w-md animate-fade-in-up">
           <h2 className="text-2xl font-bold text-text-primary mb-8">Connexion</h2>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {error && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="p-4 bg-danger-light text-danger-dark rounded-lg text-sm"
-              >
+              <div className="p-4 bg-danger-light text-danger-dark rounded-lg text-sm animate-fade-in">
                 {error}
-              </motion.div>
+              </div>
             )}
 
             <div>
@@ -159,7 +149,7 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

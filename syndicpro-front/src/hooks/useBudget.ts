@@ -7,7 +7,7 @@ export const usePeriodes = (residenceId: number) =>
     queryKey: ['periodes', residenceId],
     queryFn: async () => {
       const { data } = await periodeApi.index(residenceId);
-      return data.data as Periode[];
+      return (data.data ?? []) as Periode[];
     },
     enabled: !!residenceId,
   });
@@ -17,7 +17,7 @@ export const useBudgetSummary = (periodeId: number) =>
     queryKey: ['budget', 'summary', periodeId],
     queryFn: async () => {
       const { data } = await budgetApi.getSummary(periodeId);
-      return data.data as BudgetSummary;
+      return (data.data ?? null) as BudgetSummary | null;
     },
     enabled: !!periodeId,
   });

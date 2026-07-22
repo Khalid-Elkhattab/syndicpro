@@ -29,24 +29,24 @@ class CompteChargeController extends Controller
         return ApiResponse::created(new CompteChargeResource($compte), 'Compte de charges créé avec succès.');
     }
 
-    public function show(int $residence, int $compteCharge): JsonResponse
+    public function show(int $compteCharge): JsonResponse
     {
-        $compte = $this->service->getByResidence($residence)->firstWhere('id', $compteCharge);
+        $compte = \App\Models\CompteCharge::with(['sousCharges', 'budgetPrevisionnels'])->find($compteCharge);
 
         if (!$compte) {
             return ApiResponse::notFound();
         }
 
-        return ApiResponse::success(new CompteChargeResource($compte->load(['sousCharges', 'budgetPrevisionnels'])));
+        return ApiResponse::success(new CompteChargeResource($compte));
     }
 
-    public function update(UpdateCompteChargeRequest $request, int $residence, int $compteCharge): JsonResponse
+    public function update(UpdateCompteChargeRequest $request, int $compteCharge): JsonResponse
     {
         $compte = $this->service->update($compteCharge, $request->validated());
         return ApiResponse::success(new CompteChargeResource($compte), 'Compte de charges mis à jour avec succès.');
     }
 
-    public function destroy(int $residence, int $compteCharge): JsonResponse
+    public function destroy(int $compteCharge): JsonResponse
     {
         try {
             $this->service->delete($compteCharge);

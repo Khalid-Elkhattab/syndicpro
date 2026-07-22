@@ -5,6 +5,7 @@ interface SidebarNavItem {
   href: string;
   icon: React.ReactNode;
   badge?: number;
+  preload?: () => void;
 }
 
 interface SidebarNavProps {
@@ -19,6 +20,7 @@ export function SidebarNav({ items, collapsed }: SidebarNavProps) {
         <NavLink
           key={item.href}
           to={item.href}
+          onMouseEnter={item.preload}
           className={({ isActive }) =>
             `flex items-center px-4 py-3 hover:bg-brand-900/50 transition-colors relative ${
               isActive ? 'bg-brand-900 border-l-4 border-accent-500' : 'border-l-4 border-transparent'

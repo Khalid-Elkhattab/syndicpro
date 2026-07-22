@@ -1,16 +1,18 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion';
 import { Plus, Edit2, ToggleLeft, Eye, Search } from 'lucide-react';
+import { useResidenceStore } from '@/store/residenceStore';
 import { useCoproprietaires, useCreateCoproprietaire, useUpdateCoproprietaire, useResetPassword, useToggleActif } from '@/hooks/useCoproprietaires';
 import { Modal } from '@/components/ui/Modal';
 import { FormField } from '@/components/ui/FormField';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { DataTable } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { CoproprietairesDrawer } from '@/components/coproprietaires/CoproprietairesDrawer';
+
+const preloadDrawer = () => import('@/components/coproprietaires/CoproprietairesDrawer');
+const CoproprietairesDrawer = lazy(() => preloadDrawer().then(m => ({ default: m.CoproprietairesDrawer })));
 import {
   coproprietaireSchema,
   resetPasswordSchema,
@@ -21,12 +23,14 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import type { User } from '@/types/entities.types';
 
 export default function CoproprietairesPage() {
+  const { activeResidence } = useResidenceStore();
   const [search, setSearch] = useState('');
   const [filterActif, setFilterActif] = useState<boolean | undefined>(undefined);
   const [page, setPage] = useState(1);
 
   const { data, isLoading, isError, refetch } = useCoproprietaires({
     search: search || undefined,
+    residence_id: activeResidence?.id,
     is_active: filterActif,
     per_page: 20,
     page,
@@ -68,7 +72,7 @@ export default function CoproprietairesPage() {
     setIsSubmitting(true);
     try {
       if (editing) {
-        const { password, password_confirmation, ...rest } = payload;
+        const { password: _pw, password_confirmation: _pw2, ...rest } = payload;
         await updateMutation.mutateAsync({ id: editing.id, ...rest });
       } else {
         await createMutation.mutateAsync(payload);
@@ -105,7 +109,7 @@ export default function CoproprietairesPage() {
     { key: 'phone', label: 'Téléphone', render: (row: User) => row.phone ?? '—' },
     {
       key: 'nb_appartements', label: 'Appartements',
-      render: (row: User) => <span className="text-text-muted">{row.nb_appartements ?? 0}</span>,
+      render: (row: User) => <span className="text-text-muted">{(row as unknown as Record<string, unknown>).nb_appartements as number ?? 0}</span>,
     },
     {
       key: 'is_active', label: 'Statut',
@@ -115,7 +119,7 @@ export default function CoproprietairesPage() {
       key: 'actions', label: '', width: 'w-24',
       render: (row: User) => (
         <div className="flex gap-1 justify-end">
-          <button onClick={() => setDrawerUser(row)} className="p-1.5 rounded-lg hover:bg-surface-100 text-text-muted hover:text-brand-600" aria-label="Voir détails">
+          <button onClick={() => setDrawerUser(row)} onMouseEnter={preloadDrawer} className="p-1.5 rounded-lg hover:bg-surface-100 text-text-muted hover:text-brand-600" aria-label="Voir détails">
             <Eye className="w-4 h-4" />
           </button>
           <button onClick={() => openEdit(row)} className="p-1.5 rounded-lg hover:bg-surface-100 text-text-muted hover:text-text-primary" aria-label="Modifier">
@@ -234,12 +238,20 @@ export default function CoproprietairesPage() {
       </Modal>
 
       {drawerUser && (
-        <CoproprietairesDrawer
-          user={drawerUser}
-          onClose={() => setDrawerUser(null)}
-          onEdit={() => { setDrawerUser(null); openEdit(drawerUser); }}
-          onResetPassword={() => { setResetTarget(drawerUser); setIsResetOpen(true); }}
-        />
+        <Suspense fallback={
+          <div className="fixed inset-0 bg-black/50 z-50">
+            <div className="absolute right-0 top-0 h-full w-[480px] bg-white p-6 flex items-center justify-center shadow-xl">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-brand-600 border-t-transparent" />
+            </div>
+          </div>
+        }>
+          <CoproprietairesDrawer
+            user={drawerUser}
+            onClose={() => setDrawerUser(null)}
+            onEdit={() => { setDrawerUser(null); openEdit(drawerUser); }}
+            onResetPassword={() => { setResetTarget(drawerUser); setIsResetOpen(true); }}
+          />
+        </Suspense>
       )}
     </motion.div>
   );

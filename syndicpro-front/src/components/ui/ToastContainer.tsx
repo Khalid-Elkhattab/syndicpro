@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { useUIStore, type ToastType } from '@/store/uiStore';
 
@@ -32,17 +31,15 @@ export function ToastContainer() {
 
   return (
     <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
-      <AnimatePresence mode="popLayout">
-        {toasts.map((toast) => (
-          <ToastItem
-            key={toast.id}
-            id={toast.id}
-            type={toast.type}
-            message={toast.message}
-            onClose={removeToast}
-          />
-        ))}
-      </AnimatePresence>
+      {toasts.map((toast) => (
+        <ToastItem
+          key={toast.id}
+          id={toast.id}
+          type={toast.type}
+          message={toast.message}
+          onClose={removeToast}
+        />
+      ))}
     </div>
   );
 }
@@ -59,9 +56,12 @@ function ToastItem({
   onClose: (id: string) => void;
 }) {
   const [progress, setProgress] = useState(100);
-  const shouldReduceMotion = useReducedMotion();
+  const [isExiting, setIsExiting] = useState(false);
 
-  const handleClose = useCallback(() => onClose(id), [id, onClose]);
+  const handleClose = useCallback(() => {
+    setIsExiting(true);
+    setTimeout(() => onClose(id), 200);
+  }, [id, onClose]);
 
   useEffect(() => {
     const duration = 4000;
@@ -84,13 +84,10 @@ function ToastItem({
   const config = toastConfig[type];
 
   return (
-    <motion.div
-      layout={!shouldReduceMotion}
-      initial={shouldReduceMotion ? {} : { x: 100, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={shouldReduceMotion ? {} : { x: 100, opacity: 0 }}
-      transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.25, ease: 'easeOut' }}
-      className={`pointer-events-auto relative w-80 ${config.bg} border ${config.border} rounded-xl shadow-toast overflow-hidden`}
+    <div
+      className={`pointer-events-auto relative w-80 ${config.bg} border ${config.border} rounded-xl shadow-toast overflow-hidden transition-all duration-200 ease-out ${
+        isExiting ? 'translate-x-full opacity-0' : 'translate-x-0 opacity-100'
+      }`}
       role="alert"
       aria-live="polite"
     >
@@ -105,11 +102,10 @@ function ToastItem({
           <X className="w-4 h-4" />
         </button>
       </div>
-      <motion.div
+      <div
         className={`h-1 ${type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : type === 'warning' ? 'bg-warning' : 'bg-info'}`}
         style={{ width: `${progress}%` }}
-        transition={{ duration: 0.05, ease: 'linear' }}
       />
-    </motion.div>
+    </div>
   );
 }

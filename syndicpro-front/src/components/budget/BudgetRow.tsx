@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { memo, useState } from 'react';
+import { motion, AnimatePresence } from '@/lib/motion';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { BudgetProgressBar } from './BudgetProgressBar';
 import type { BudgetCompte } from '@/api/budget.api';
@@ -10,7 +10,7 @@ interface BudgetRowProps {
   onEditBudget?: (budgetId: number, label: string, currentValue: number) => void;
 }
 
-export function BudgetRow({ compte, onAddExpense, onEditBudget }: BudgetRowProps) {
+export const BudgetRow = memo(function BudgetRow({ compte, onAddExpense, onEditBudget }: BudgetRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -103,4 +103,4 @@ export function BudgetRow({ compte, onAddExpense, onEditBudget }: BudgetRowProps
       </AnimatePresence>
     </div>
   );
-}
+});

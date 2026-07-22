@@ -26,14 +26,16 @@ class ResidenceRepository extends BaseRepository
 
     public function findWithStats(int $syndicId): Collection
     {
-        $residences = $this->findBySyndic($syndicId);
-
-        foreach ($residences as $residence) {
-            $residence->nb_immeubles = $residence->immeubles->count();
-            $residence->nb_appartements = $residence->appartements()->whereNull('deleted_at')->count();
-        }
-
-        return $residences;
+        return $this->model
+            ->where('syndic_id', $syndicId)
+            ->with([
+                'immeubles',
+                'periodes' => fn($q) => $q->where('is_active', true)->limit(1),
+            ])
+            ->withCount(['appartements' => fn($q) => $q->whereNull('deleted_at')])
+            ->withCount('immeubles')
+            ->orderBy('nom')
+            ->get();
     }
 
     public function findWithRelations(int $id): ?Residence

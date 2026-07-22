@@ -1,16 +1,19 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, FileText, Download, Clock } from 'lucide-react';
+import { useState, lazy, Suspense } from 'react';
+import { motion } from '@/lib/motion';
+import { Plus, FileText, Clock } from 'lucide-react';
 import { useResidenceStore } from '@/store/residenceStore';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable } from '@/components/ui/DataTable';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SkeletonTable } from '@/components/ui/Skeleton';
-import { EnregistrerPaiementModal } from '@/components/paiement/EnregistrerPaiementModal';
 import { usePaiements, useEnregistrerPaiement, useTotalPercu } from '@/hooks/usePaiements';
+
+const preloadPayModal = () => import('@/components/paiement/EnregistrerPaiementModal');
+const EnregistrerPaiementModal = lazy(() => preloadPayModal().then(m => ({ default: m.EnregistrerPaiementModal })));
 import { useCoproprietaires } from '@/hooks/useCoproprietaires';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { useUIStore } from '@/store/uiStore';
+import type { Paiement } from '@/types/entities.types';
 import { ErrorState } from '@/components/ui/ErrorState';
 
 export default function PaiementsPage() {
@@ -41,7 +44,7 @@ export default function PaiementsPage() {
       addToast('success', 'Paiement enregistré avec succès. Le reçu est en cours de génération.');
       setIsModalOpen(false);
       refetch();
-    } catch (error) {
+    } catch {
       addToast('error', 'Erreur lors de l\'enregistrement du paiement.');
     }
   };
@@ -50,7 +53,10 @@ export default function PaiementsPage() {
     window.open(`/api/syndic/paiements/${paiementId}/download-recu`, '_blank');
   };
 
-  const columns = [
+  const columns: {
+    key: string; label: string; sortable?: boolean;
+    render?: (row: Paiement) => React.ReactNode;
+  }[] = [
     {
       key: 'date_paiement',
       label: 'Date',
@@ -59,12 +65,12 @@ export default function PaiementsPage() {
     {
       key: 'coproprietaires',
       label: 'Copropriétaire',
-      render: (row: any) => row.coproprietaire?.name ?? '—',
+      render: (row) => row.coproprietaire?.name ?? '—',
     },
     {
       key: 'appartement',
       label: 'Appartement',
-      render: (row: any) => {
+      render: (row) => {
         const detail = row.cotisation_detail;
         const appartement = detail?.appartement;
         return appartement ? `${appartement.numero}` : '—';
@@ -73,13 +79,13 @@ export default function PaiementsPage() {
     {
       key: 'cotisation',
       label: 'Cotisation',
-      render: (row: any) => row.cotisation_detail?.cotisation?.label ?? '—',
+      render: (row) => row.cotisation_detail?.cotisation?.label ?? '—',
     },
     {
       key: 'montant',
       label: 'Montant',
       sortable: true,
-      render: (row: any) => (
+      render: (row) => (
         <span className="font-mono font-semibold text-text-primary">
           {formatCurrency(row.montant)}
         </span>
@@ -88,17 +94,17 @@ export default function PaiementsPage() {
     {
       key: 'mode_paiement',
       label: 'Mode',
-      render: (row: any) => row.mode_paiement_label ?? '—',
+      render: (row) => row.mode_paiement_label ?? '—',
     },
     {
       key: 'reference',
       label: 'Référence',
-      render: (row: any) => row.reference ?? '—',
+      render: (row) => row.reference ?? '—',
     },
     {
       key: 'recu',
       label: 'Reçu',
-      render: (row: any) => (
+      render: (row) => (
         row.has_recu ? (
           <button
             onClick={() => handleDownloadRecu(row.id)}
@@ -141,7 +147,7 @@ export default function PaiementsPage() {
         subtitle={activeResidence.nom}
         actions={
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => { preloadPayModal(); setIsModalOpen(true); }}
             className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors"
           >
             <Plus className="w-5 h-5" />
@@ -228,12 +234,20 @@ export default function PaiementsPage() {
         />
       )}
 
-      <EnregistrerPaiementModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleSubmitPaiement}
-        residenceId={activeResidence.id}
-      />
+      <Suspense fallback={
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-6 shadow-xl">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-brand-600 border-t-transparent mx-auto" />
+          </div>
+        </div>
+      }>
+        <EnregistrerPaiementModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleSubmitPaiement}
+          residenceId={activeResidence.id}
+        />
+      </Suspense>
     </div>
   );
 }

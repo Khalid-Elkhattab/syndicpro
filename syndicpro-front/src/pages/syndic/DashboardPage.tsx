@@ -1,38 +1,37 @@
-import { useEffect } from 'react';
+import { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import {
   PiggyBank, TrendingDown, Wallet, AlertTriangle, FileText, AlertCircle,
-  ArrowRight, Building2,
+  ArrowRight,
 } from 'lucide-react';
 import { useResidenceStore } from '@/store/residenceStore';
-import { usePeriodes, useBudgetSummary } from '@/hooks/useBudget';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { KpiCard } from '@/components/ui/KpiCard';
 import { Badge } from '@/components/ui/Badge';
-import { BudgetBarChart } from '@/components/charts/BudgetBarChart';
-import { DepensePieChart } from '@/components/charts/DepensePieChart';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
 import { SkeletonKpi } from '@/components/ui/Skeleton';
 import { ErrorState } from '@/components/ui/ErrorState';
 import type { Depense } from '@/types/entities.types';
 
+const BudgetBarChart = lazy(() => import('@/components/charts/BudgetBarChart'));
+const DepensePieChart = lazy(() => import('@/components/charts/DepensePieChart'));
+
+function ChartFallback() {
+  return <div className="bg-white rounded-xl shadow-card p-6 h-[300px] animate-pulse" />;
+}
+
 export default function DashboardPage() {
   const { activeResidence } = useResidenceStore();
   const residenceId = activeResidence?.id ?? 0;
   const navigate = useNavigate();
 
-  const { data: periodes, isLoading: periodesLoading, isError: periodesError, refetch: periodesRefetch } = usePeriodes(residenceId);
-
-  const activePeriode = periodes?.find((p) => p.is_active) ?? periodes?.[0];
-  const periodeId = activePeriode?.id ?? 0;
-
-  const { data: budget, isError: budgetError, refetch: budgetRefetch } = useBudgetSummary(periodeId);
-
   const {
     isLoading,
+    isError,
+    refetch,
+    budget,
     cotisationsTotal,
     impayesList,
     impayesMeta,
@@ -40,7 +39,8 @@ export default function DashboardPage() {
     reclamationsList,
     chartData,
     pieData,
-  } = useDashboardData({ residenceId, periodeId });
+    activePeriode,
+  } = useDashboardData({ residenceId });
 
   if (!residenceId) {
     return (
@@ -50,18 +50,10 @@ export default function DashboardPage() {
     );
   }
 
-  if (periodesError) {
+  if (isError) {
     return (
       <div className="p-6">
-        <ErrorState message="Impossible de charger les périodes." onRetry={periodesRefetch} />
-      </div>
-    );
-  }
-
-  if (budgetError) {
-    return (
-      <div className="p-6">
-        <ErrorState message="Impossible de charger le budget." onRetry={budgetRefetch} />
+        <ErrorState message="Impossible de charger le tableau de bord." onRetry={refetch} />
       </div>
     );
   }
@@ -80,120 +72,98 @@ export default function DashboardPage() {
       {isLoading ? (
         <SkeletonKpi count={6} />
       ) : (
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: 0.08 } },
-          }}
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-4"
-        >
-          <motion.div
-            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-          >
-            <KpiCard
-              label="Budget Annuel Prévu"
-              value={budget?.prevu_total ?? 0}
-              icon={<PiggyBank className="w-5 h-5" />}
-              color="brand"
-            />
-          </motion.div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-4">
+            <div className="animate-fade-in-up" style={{ animationDelay: '0s', animationFillMode: 'backwards' }}>
+              <KpiCard
+                label="Budget Annuel Prévu"
+                value={budget?.prevu_total ?? 0}
+                icon={<PiggyBank className="w-5 h-5" />}
+                color="brand"
+              />
+            </div>
 
-          <motion.div
-            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-          >
-            <KpiCard
-              label="Total Consommé"
-              value={budget?.consomme_total ?? 0}
-              icon={<TrendingDown className="w-5 h-5" />}
-              color="warning"
-            />
-          </motion.div>
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.08s', animationFillMode: 'backwards' }}>
+              <KpiCard
+                label="Total Consommé"
+                value={budget?.consomme_total ?? 0}
+                icon={<TrendingDown className="w-5 h-5" />}
+                color="warning"
+              />
+            </div>
 
-          <motion.div
-            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-          >
-            <KpiCard
-              label="Budget Restant"
-              value={Math.abs(budget?.restant_total ?? 0)}
-              prefix={(budget?.restant_total ?? 0) < 0 ? '- ' : ''}
-              icon={<Wallet className="w-5 h-5" />}
-              color={(budget?.restant_total ?? 0) >= 0 ? 'success' : 'danger'}
-            />
-          </motion.div>
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.16s', animationFillMode: 'backwards' }}>
+              <KpiCard
+                label="Budget Restant"
+                value={Math.abs(budget?.restant_total ?? 0)}
+                prefix={(budget?.restant_total ?? 0) < 0 ? '- ' : ''}
+                icon={<Wallet className="w-5 h-5" />}
+                color={(budget?.restant_total ?? 0) >= 0 ? 'success' : 'danger'}
+              />
+            </div>
 
-          <motion.div
-            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-          >
-            <KpiCard
-              label="Hors Budget"
-              value={budget?.hors_budget_total ?? 0}
-              icon={<AlertTriangle className="w-5 h-5" />}
-              color="warning"
-            />
-          </motion.div>
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.24s', animationFillMode: 'backwards' }}>
+              <KpiCard
+                label="Hors Budget"
+                value={budget?.hors_budget_total ?? 0}
+                icon={<AlertTriangle className="w-5 h-5" />}
+                color="warning"
+              />
+            </div>
 
-          <motion.div
-            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-          >
-            <KpiCard
-              label="Total Cotisations"
-              value={cotisationsTotal}
-              icon={<FileText className="w-5 h-5" />}
-              color="brand"
-            />
-          </motion.div>
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.32s', animationFillMode: 'backwards' }}>
+              <KpiCard
+                label="Total Cotisations"
+                value={cotisationsTotal}
+                icon={<FileText className="w-5 h-5" />}
+                color="brand"
+              />
+            </div>
 
-          <motion.div
-            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-          >
-            <KpiCard
-              label="Impayés"
-              value={impayesMeta?.total_impaye ?? 0}
-              icon={<AlertCircle className="w-5 h-5" />}
-              color="danger"
-              suffix={impayesMeta && impayesMeta.nb_impayes > 0 ? ` · ${impayesMeta.nb_impayes} dossier(s)` : ''}
-              format="custom"
-              customFormat={(v) => formatCurrency(v)}
-            />
-          </motion.div>
-        </motion.div>
-      )}
-
-      {!isLoading && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.4 }}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-        >
-          <div className="lg:col-span-2">
-            <BudgetBarChart data={chartData} />
-            <button
-              onClick={() => navigate('/syndic/budget')}
-              className="mt-3 text-sm text-brand-600 hover:text-brand-700 font-medium inline-flex items-center gap-1 transition-colors"
-            >
-              Voir le budget complet <ArrowRight className="w-4 h-4" />
-            </button>
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.40s', animationFillMode: 'backwards' }}>
+              <KpiCard
+                label="Impayés"
+                value={impayesMeta?.total_impaye ?? 0}
+                icon={<AlertCircle className="w-5 h-5" />}
+                color="danger"
+                suffix={impayesMeta && impayesMeta.nb_impayes > 0 ? ` · ${impayesMeta.nb_impayes} dossier(s)` : ''}
+                format="custom"
+                customFormat={(v) => formatCurrency(v)}
+              />
+            </div>
           </div>
-          <div>
-            <DepensePieChart data={pieData} />
-          </div>
-        </motion.div>
-      )}
 
-      {!isLoading && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.4 }}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-        >
-          <RecentDepensesCard depenses={depensesList} navigate={navigate} />
-          <RecentImpayesCard impayes={impayesList} navigate={navigate} />
-          <RecentReclamationsCard reclamations={reclamationsList} navigate={navigate} />
-        </motion.div>
+          <div
+            className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in-up"
+            style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}
+          >
+            <div className="lg:col-span-2">
+              <Suspense fallback={<ChartFallback />}>
+                <BudgetBarChart data={chartData} />
+              </Suspense>
+              <button
+                onClick={() => navigate('/syndic/budget')}
+                className="mt-3 text-sm text-brand-600 hover:text-brand-700 font-medium inline-flex items-center gap-1 transition-colors"
+              >
+                Voir le budget complet <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+            <div>
+              <Suspense fallback={<ChartFallback />}>
+                <DepensePieChart data={pieData} />
+              </Suspense>
+            </div>
+          </div>
+
+          <div
+            className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in-up"
+            style={{ animationDelay: '0.5s', animationFillMode: 'backwards' }}
+          >
+            <RecentDepensesCard depenses={depensesList} navigate={navigate} />
+            <RecentImpayesCard impayes={impayesList as unknown as never[]} navigate={navigate} />
+            <RecentReclamationsCard reclamations={reclamationsList as unknown as never[]} navigate={navigate} />
+          </div>
+        </>
       )}
     </div>
   );
@@ -208,21 +178,19 @@ function RecentDepensesCard({ depenses, navigate }: { depenses: Depense[]; navig
       ) : (
         <div className="space-y-3">
           {depenses.map((d, i) => (
-            <motion.div
+            <div
               key={d.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              className="flex items-center justify-between text-sm"
+              className="flex items-center justify-between text-sm animate-fade-in-up"
+              style={{ animationDelay: `${i * 0.04}s`, animationFillMode: 'backwards' }}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span className="text-text-muted text-xs flex-shrink-0 w-16">{formatDate(d.date)}</span>
-                <span className="text-text-secondary truncate">{d.sous_charge?.nom ?? '—'}</span>
+                <span className="text-text-secondary truncate">{(d as unknown as { sous_charge?: { nom: string } }).sous_charge?.nom ?? '—'}</span>
               </div>
               <span className="font-mono font-semibold text-text-primary flex-shrink-0 ml-2">
                 {formatCurrency(d.montant)}
               </span>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}
@@ -245,12 +213,10 @@ function RecentImpayesCard({ impayes, navigate }: { impayes: Array<{ id: number;
       ) : (
         <div className="space-y-3">
           {impayes.slice(0, 5).map((d, i) => (
-            <motion.div
+            <div
               key={d.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              className="flex items-center justify-between text-sm"
+              className="flex items-center justify-between text-sm animate-fade-in-up"
+              style={{ animationDelay: `${i * 0.04}s`, animationFillMode: 'backwards' }}
             >
               <div className="min-w-0 flex-1">
                 <p className="text-text-primary truncate">{d.coproprietaire?.name ?? '—'}</p>
@@ -266,7 +232,7 @@ function RecentImpayesCard({ impayes, navigate }: { impayes: Array<{ id: number;
                   size="sm"
                 />
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}
@@ -309,12 +275,10 @@ function RecentReclamationsCard({ reclamations, navigate }: { reclamations: Arra
       ) : (
         <div className="space-y-3">
           {reclamations.slice(0, 3).map((r, i) => (
-            <motion.div
+            <div
               key={r.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              className="p-3 rounded-lg bg-surface-50"
+              className="p-3 rounded-lg bg-surface-50 animate-fade-in-up"
+              style={{ animationDelay: `${i * 0.04}s`, animationFillMode: 'backwards' }}
             >
               <div className="flex items-center gap-2 mb-1">
                 <Badge
@@ -331,7 +295,7 @@ function RecentReclamationsCard({ reclamations, navigate }: { reclamations: Arra
               <p className="text-xs text-text-muted mt-1">
                 {r.coproprietaire?.name ?? '—'} · Appt. {r.appartement?.numero ?? '—'}
               </p>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}

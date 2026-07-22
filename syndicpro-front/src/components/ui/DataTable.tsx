@@ -1,5 +1,3 @@
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-
 interface DataTableColumn<T> {
   key: string;
   label: string;
@@ -38,7 +36,6 @@ export function DataTable<T>({
   getRowKey,
   onRowClick,
 }: DataTableProps<T>) {
-  const shouldReduceMotion = useReducedMotion();
   const handleSort = (key: string) => {
     if (!onSort) return;
     const col = columns.find((c) => c.key === key);
@@ -88,29 +85,25 @@ export function DataTable<T>({
           </tr>
         </thead>
         <tbody>
-          <AnimatePresence>
-            {data.map((row, index) => (
-              <motion.tr
-                key={getRowKey(row)}
-                tabIndex={onRowClick ? 0 : undefined}
-                role={onRowClick ? 'button' : undefined}
-                initial={shouldReduceMotion ? {} : { opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={shouldReduceMotion ? { duration: 0 } : { delay: index * 0.04, duration: 0.2 }}
-                className={`border-t border-surface-100 hover:bg-brand-50/50 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
-                onClick={() => onRowClick?.(row)}
-                onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick?.(row); } } : undefined}
-              >
-                {columns.map((col) => (
-                  <td key={col.key} className="px-4 py-3 text-sm text-text-primary">
-                    {col.render
-                      ? col.render(row, index)
-                      : (row as Record<string, unknown>)[col.key]?.toString() ?? '—'}
-                  </td>
-                ))}
-              </motion.tr>
-            ))}
-          </AnimatePresence>
+          {data.map((row, index) => (
+            <tr
+              key={getRowKey(row)}
+              tabIndex={onRowClick ? 0 : undefined}
+              role={onRowClick ? 'button' : undefined}
+              className={`border-t border-surface-100 hover:bg-brand-50/50 transition-colors animate-fade-in-up ${onRowClick ? 'cursor-pointer' : ''}`}
+              style={{ animationDelay: `${index * 40}ms`, animationFillMode: 'backwards' }}
+              onClick={() => onRowClick?.(row)}
+              onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick?.(row); } } : undefined}
+            >
+              {columns.map((col) => (
+                <td key={col.key} className="px-4 py-3 text-sm text-text-primary">
+                  {col.render
+                    ? col.render(row, index)
+                    : (row as Record<string, unknown>)[col.key]?.toString() ?? '—'}
+                </td>
+              ))}
+            </tr>
+          ))}
         </tbody>
       </table>
 

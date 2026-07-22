@@ -1,12 +1,14 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, lazy, Suspense } from 'react';
+import { motion, AnimatePresence } from '@/lib/motion';
 import { Plus, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
 import { useMesReclamations } from '@/hooks/useReclamations';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ReclamationBadge, PrioriteBadge } from '@/components/reclamation/ReclamationBadge';
 import { formatDate } from '@/utils/formatDate';
-import { NouvelleReclamationForm } from '@/components/reclamation/NouvelleReclamationForm';
+
+const preloadForm = () => import('@/components/reclamation/NouvelleReclamationForm');
+const NouvelleReclamationForm = lazy(() => preloadForm().then(m => ({ default: m.NouvelleReclamationForm })));
 import { ErrorState } from '@/components/ui/ErrorState';
 
 export function MesReclamationsPage() {
@@ -16,11 +18,6 @@ export function MesReclamationsPage() {
 
   const handleToggleExpand = (id: number) => {
     setExpandedId(expandedId === id ? null : id);
-  };
-
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
   };
 
   if (isError) {
@@ -40,7 +37,7 @@ export function MesReclamationsPage() {
             {reclamations?.length ?? 0} réclamation{reclamations && reclamations.length > 1 ? 's' : ''}
           </p>
         </div>
-        <Button onClick={() => setShowNewForm(true)}>
+        <Button onClick={() => { preloadForm(); setShowNewForm(true); }}>
           <Plus className="w-4 h-4" />
           Nouvelle réclamation
         </Button>
@@ -172,11 +169,13 @@ export function MesReclamationsPage() {
         )}
       </div>
 
-      <NouvelleReclamationForm
-        isOpen={showNewForm}
-        onClose={() => setShowNewForm(false)}
-        onSuccess={() => {}}
-      />
+      <Suspense fallback={null}>
+        <NouvelleReclamationForm
+          isOpen={showNewForm}
+          onClose={() => setShowNewForm(false)}
+          onSuccess={() => {}}
+        />
+      </Suspense>
     </div>
   );
 }

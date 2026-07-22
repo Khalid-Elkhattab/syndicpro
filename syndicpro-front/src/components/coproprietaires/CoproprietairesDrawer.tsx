@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from '@/lib/motion';
 import { X, Edit2, Key, ChevronRight, Mail, Phone, User as UserIcon, Calendar } from 'lucide-react';
 import { useCoproprietaire } from '@/hooks/useCoproprietaires';
 import { StatusBadge } from '@/components/ui/StatusBadge';
@@ -158,10 +158,11 @@ export function CoproprietairesDrawer({ user, onClose, onEdit, onResetPassword }
   );
 }
 
-function TabContent({ tab, user }: { tab: Tab; user: User & Record<string, unknown> }) {
+function TabContent({ tab, user }: { tab: Tab; user: User }) {
+  const u = user as unknown as Record<string, unknown>;
   switch (tab) {
     case 'appartements': {
-      const appartements = user.appartements as Array<{
+      const appartements = u.appartements as Array<{
         id: number;
         numero: string;
         etage: number;
@@ -190,7 +191,7 @@ function TabContent({ tab, user }: { tab: Tab; user: User & Record<string, unkno
     }
 
     case 'cotisations': {
-      const details = user.cotisation_details as Array<{
+      const details = u.cotisation_details as Array<{
         id: number;
         montant: number;
         montant_paye: number;
@@ -239,7 +240,7 @@ function TabContent({ tab, user }: { tab: Tab; user: User & Record<string, unkno
     }
 
     case 'paiements': {
-      const paiements = user.paiements as Array<{
+      const paiements = u.paiements as Array<{
         id: number;
         montant: number;
         date_paiement: string;
@@ -276,7 +277,7 @@ function TabContent({ tab, user }: { tab: Tab; user: User & Record<string, unkno
     }
 
     case 'reclamations': {
-      const reclamations = user.reclamations as Array<{
+      const reclamations = u.reclamations as Array<{
         id: number;
         titre: string;
         statut: string;

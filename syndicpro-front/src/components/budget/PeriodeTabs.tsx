@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { memo } from 'react';
 import type { Periode } from '@/api/periode.api';
 
 interface PeriodeTabsProps {
@@ -8,7 +8,7 @@ interface PeriodeTabsProps {
   onAddNew?: () => void;
 }
 
-export function PeriodeTabs({ periodes, selectedPeriodeId, onSelect, onAddNew }: PeriodeTabsProps) {
+export const PeriodeTabs = memo(function PeriodeTabs({ periodes, selectedPeriodeId, onSelect, onAddNew }: PeriodeTabsProps) {
   if (periodes.length === 0) {
     return (
       <div className="flex items-center justify-between mb-6">
@@ -43,13 +43,7 @@ export function PeriodeTabs({ periodes, selectedPeriodeId, onSelect, onAddNew }:
               Actif
             </span>
           )}
-          {selectedPeriodeId === periode.id && (
-            <motion.div
-              layoutId="activeTab"
-              className="absolute inset-0 bg-brand-600 rounded-full -z-10"
-              transition={{ type: 'spring', duration: 0.3 }}
-            />
-          )}
+
         </button>
       ))}
       {onAddNew && (
@@ -62,4 +56,4 @@ export function PeriodeTabs({ periodes, selectedPeriodeId, onSelect, onAddNew }:
       )}
     </div>
   );
-}
+});

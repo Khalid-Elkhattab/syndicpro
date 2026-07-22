@@ -2,27 +2,42 @@
 
 namespace App\Http\Requests\Syndic\SousCharge;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use App\Models\SousCharge;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class UpdateSousChargeRequest extends FormRequest
 {
+    private ?string $authorizationMessage = null;
+
     public function authorize(): bool
     {
         $sousCharge = \App\Models\SousCharge::with('compteCharge.residence')->find($this->route('sous_charge'));
 
         if (!$sousCharge) {
+            $this->authorizationMessage = 'Sous-charge introuvable.';
             return false;
         }
 
-        return $sousCharge->compteCharge->residence->syndic_id === auth()->id();
+        if ($sousCharge->compteCharge->residence->syndic_id !== auth()->id()) {
+            $this->authorizationMessage = 'Vous n\'êtes pas autorisé à modifier les sous-charges de ce compte.';
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function failedAuthorization()
+    {
+        throw new AuthorizationException($this->authorizationMessage ?? 'Accès non autorisé.');
     }
 
     public function rules(): array
     {
         $sousChargeId = $this->route('sous_charge');
-        $compteChargeId = $this->route('compte_charge');
+        $sousCharge = \App\Models\SousCharge::find($sousChargeId);
+        $compteChargeId = $sousCharge?->compte_charge_id;
 
         return [
             'nom' => [

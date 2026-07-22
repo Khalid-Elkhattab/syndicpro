@@ -43,24 +43,24 @@ class SousChargeController extends Controller
         return ApiResponse::created(new SousChargeResource($sousCharge), 'Sous-charge créée avec succès.');
     }
 
-    public function show(int $compteCharge, int $sousCharge): JsonResponse
+    public function show(int $sousCharge): JsonResponse
     {
         $sousChargeModel = SousCharge::with(['compteCharge', 'residence'])->find($sousCharge);
 
-        if (!$sousChargeModel || $sousChargeModel->compte_charge_id !== $compteCharge) {
+        if (!$sousChargeModel) {
             return ApiResponse::notFound();
         }
 
         return ApiResponse::success(new SousChargeResource($sousChargeModel));
     }
 
-    public function update(UpdateSousChargeRequest $request, int $compteCharge, int $sousCharge): JsonResponse
+    public function update(UpdateSousChargeRequest $request, int $sousCharge): JsonResponse
     {
         $sousChargeModel = $this->service->update($sousCharge, $request->validated());
         return ApiResponse::success(new SousChargeResource($sousChargeModel), 'Sous-charge mise à jour avec succès.');
     }
 
-    public function destroy(int $compteCharge, int $sousCharge): JsonResponse
+    public function destroy(int $sousCharge): JsonResponse
     {
         try {
             $this->service->delete($sousCharge);

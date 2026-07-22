@@ -20,7 +20,7 @@ class StoreCompteChargeRequest extends FormRequest
                 'required',
                 'string',
                 'max:150',
-                Rule::unique('comptes_charges', 'nom')
+                Rule::unique('compte_charges', 'nom')
                     ->where('residence_id', $this->route('residence')),
             ],
             'description' => 'nullable|string|max:500',

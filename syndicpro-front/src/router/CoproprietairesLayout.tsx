@@ -1,6 +1,11 @@
+import { Suspense } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { axiosInstance } from '@/api/axiosInstance';
+
+function PageFallback() {
+  return <div className="animate-pulse space-y-4 p-2"><div className="h-8 w-48 bg-surface-200 rounded" /><div className="h-4 w-full bg-surface-100 rounded" /><div className="h-4 w-3/4 bg-surface-100 rounded" /><div className="h-20 w-full bg-surface-100 rounded" /></div>;
+}
 
 const navigation = [
   { name: 'Tableau de bord', href: '/coproprietaires/dashboard', icon: '📊' },
@@ -65,7 +70,9 @@ export default function CoproprietairesLayout() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Outlet />
+        <Suspense fallback={<PageFallback />}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   );

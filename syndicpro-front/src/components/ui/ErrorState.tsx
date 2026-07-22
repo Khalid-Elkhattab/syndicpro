@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface ErrorStateProps {
@@ -11,10 +10,8 @@ export function ErrorState({
   onRetry,
 }: ErrorStateProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center justify-center py-16 px-4"
+    <div
+      className="flex flex-col items-center justify-center py-16 px-4 animate-fade-in-up"
       role="alert"
       aria-live="assertive"
     >
@@ -36,6 +33,6 @@ export function ErrorState({
           Réessayer
         </button>
       )}
-    </motion.div>
+    </div>
   );
 }

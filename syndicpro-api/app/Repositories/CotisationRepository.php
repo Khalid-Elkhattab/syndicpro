@@ -45,27 +45,37 @@ class CotisationRepository extends BaseRepository
 
     public function bulkCreateDetails(array $details): \Illuminate\Database\Eloquent\Collection
     {
-        $models = collect($details)->map(fn($detail) => CotisationDetail::create($detail));
-        return new \Illuminate\Database\Eloquent\Collection($models);
+        if (empty($details)) {
+            return new \Illuminate\Database\Eloquent\Collection();
+        }
+
+        $first = $details[0];
+        CotisationDetail::insert($details);
+
+        return \App\Models\CotisationDetail::where('cotisation_id', $first['cotisation_id'])
+            ->whereIn('appartement_id', collect($details)->pluck('appartement_id'))
+            ->get();
     }
 
     public function getImpayesByResidence(int $residenceId, array $filters = []): LengthAwarePaginator
     {
         $query = CotisationDetail::query()
-            ->whereHas('cotisation', fn($q) => $q->where('residence_id', $residenceId))
-            ->whereIn('statut', ['non_paye', 'partiellement_paye'])
+            ->join('cotisations', 'cotisation_details.cotisation_id', '=', 'cotisations.id')
+            ->where('cotisations.residence_id', $residenceId)
+            ->whereIn('cotisation_details.statut', ['non_paye', 'partiellement_paye'])
+            ->select('cotisation_details.*')
             ->with([
                 'cotisation',
                 'appartement.immeuble',
                 'coproprietaire',
             ])
             ->when(isset($filters['periode_id']), fn($q, $periodeId) =>
-                $q->whereHas('cotisation', fn($q2) => $q2->where('periode_id', $periodeId))
+                $q->where('cotisations.periode_id', $periodeId)
             )
-            ->when(isset($filters['statut']), fn($q, $statut) => $q->where('statut', $statut));
+            ->when(isset($filters['statut']), fn($q, $statut) => $q->where('cotisation_details.statut', $statut));
 
         $perPage = $filters['per_page'] ?? 20;
-        return $query->orderByDesc('created_at')->paginate($perPage);
+        return $query->orderByDesc('cotisation_details.created_at')->paginate($perPage);
     }
 
     public function getPrevisualisation(int $residenceId, string $mode, float $montant, int $periodeId): array
@@ -120,13 +130,15 @@ class CotisationRepository extends BaseRepository
 
     public function findDetailsByResidence(int $residenceId): \Illuminate\Database\Eloquent\Collection
     {
-        return CotisationDetail::whereHas('cotisation', fn($q) =>
-            $q->where('residence_id', $residenceId)
-        )->with([
-            'cotisation',
-            'appartement.immeuble',
-            'coproprietaire',
-        ])->get();
+        return CotisationDetail::join('cotisations', 'cotisation_details.cotisation_id', '=', 'cotisations.id')
+            ->where('cotisations.residence_id', $residenceId)
+            ->select('cotisation_details.*')
+            ->with([
+                'cotisation',
+                'appartement.immeuble',
+                'coproprietaire',
+            ])
+            ->get();
     }
 
     public function findDetailsByCoproprietaire(int $coproprietaireId, array $filters = []): \Illuminate\Database\Eloquent\Collection
@@ -134,7 +146,9 @@ class CotisationRepository extends BaseRepository
         return CotisationDetail::where('coproprietaire_id', $coproprietaireId)
             ->with(['cotisation', 'paiements', 'appartement'])
             ->when(isset($filters['type']), fn($q, $type) =>
-                $q->whereHas('cotisation', fn($q2) => $q2->where('type', $type))
+                $q->join('cotisations', 'cotisation_details.cotisation_id', '=', 'cotisations.id')
+                  ->where('cotisations.type', $type)
+                  ->select('cotisation_details.*')
             )
             ->when(isset($filters['statut']), fn($q, $statut) => $q->where('statut', $statut))
             ->get();

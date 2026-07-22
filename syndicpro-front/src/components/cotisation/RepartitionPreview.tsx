@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 interface PreviewItem {
@@ -105,7 +105,7 @@ export function RepartitionPreview({
           </p>
           {items.slice(0, 1).map((item) => (
             <p key={item.appartement_id} className="font-mono text-xs mt-1 text-text-muted">
-              Ex. : {item.tantième} ÷ {item.total_tantiemes} × {formatCurrency(montantTotal)} ={' '}
+              Ex. : {item.tantieme} ÷ {item.total_tantiemes} × {formatCurrency(montantTotal)} ={' '}
               {formatCurrency(item.montant_calcule)}
             </p>
           ))}

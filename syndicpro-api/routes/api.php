@@ -15,6 +15,7 @@ use App\Http\Controllers\Syndic\CotisationController;
 use App\Http\Controllers\Syndic\PaiementController;
 use App\Http\Controllers\Syndic\ReclamationController;
 use App\Http\Controllers\Syndic\RapportController;
+use App\Http\Controllers\Syndic\DashboardController as SyndicDashboardController;
 use App\Http\Controllers\Coproprietaires\ReclamationController as CoproReclamationController;
 use App\Http\Controllers\Coproprietaires\DashboardController;
 use App\Http\Controllers\Coproprietaires\AppartementController as CoproAppartementController;
@@ -139,8 +140,11 @@ Route::prefix('syndic')
         Route::put('reclamations/{reclamation}/statut', [ReclamationController::class, 'updateStatut'])
             ->name('syndic.reclamations.update-statut');
 
+        Route::get('residences/{residence}/dashboard', [SyndicDashboardController::class, 'index'])
+            ->name('syndic.dashboard');
+
         // Rapports
-        Route::prefix('residences/{residence}/rapports')->group(function () {
+        Route::prefix('residences/{residence}/rapports')->middleware('throttle:30,1')->group(function () {
             Route::get('budget', [RapportController::class, 'budget'])
                 ->name('syndic.rapports.budget');
             Route::get('impayes', [RapportController::class, 'impayes'])

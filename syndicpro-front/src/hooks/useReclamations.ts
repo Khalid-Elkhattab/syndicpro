@@ -14,10 +14,10 @@ export const useReclamationsResidence = (
   useQuery({
     queryKey: ['reclamations', residenceId, filters],
     queryFn: async () => {
-      const { data } = await reclamationApi.getByResidence(residenceId, filters);
+      const result = await reclamationApi.getByResidence(residenceId, filters);
       return {
-        data: data.data as Reclamation[],
-        meta: data.meta,
+        data: result.data as Reclamation[],
+        meta: result.meta,
       };
     },
     enabled: !!residenceId,
@@ -27,8 +27,8 @@ export const useReclamation = (id: number) =>
   useQuery({
     queryKey: ['reclamations', id],
     queryFn: async () => {
-      const { data } = await reclamationApi.show(id);
-      return data.data as Reclamation;
+      const result = await reclamationApi.show(id);
+      return result.data as Reclamation;
     },
     enabled: !!id,
   });
@@ -48,8 +48,8 @@ export const useMesReclamations = () =>
   useQuery({
     queryKey: ['reclamations', 'mine'],
     queryFn: async () => {
-      const { data } = await reclamationApi.getMine();
-      return data.data as Reclamation[];
+      const result = await reclamationApi.getMine();
+      return result.data as Reclamation[];
     },
   });
 
@@ -57,8 +57,8 @@ export const useReclamationMine = (id: number) =>
   useQuery({
     queryKey: ['reclamations', 'mine', id],
     queryFn: async () => {
-      const { data } = await reclamationApi.showMine(id);
-      return data.data as Reclamation;
+      const result = await reclamationApi.showMine(id);
+      return result.data as Reclamation;
     },
     enabled: !!id,
   });

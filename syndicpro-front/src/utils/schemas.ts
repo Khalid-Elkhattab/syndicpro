@@ -7,13 +7,13 @@ export const residenceSchema = z.object({
 });
 
 export const immeubleSchema = z.object({
-  residence_id: z.number({ required_error: 'La résidence est obligatoire.' }),
+  residence_id: z.number({ message: 'La résidence est obligatoire.' }),
   nom: z.string().min(1, 'Le nom est obligatoire.').max(100),
 });
 
 export const appartementSchema = z.object({
-  residence_id: z.number({ required_error: 'La résidence est obligatoire.' }),
-  immeuble_id: z.number({ required_error: 'L\'immeuble est obligatoire.' }),
+  residence_id: z.number({ message: 'La résidence est obligatoire.' }),
+  immeuble_id: z.number({ message: 'L\'immeuble est obligatoire.' }),
   numero: z.string().min(1, 'Le numéro est obligatoire.').max(20),
   etage: z.number().int().min(0, 'L\'étage doit être positif.'),
   tantieme: z.number().positive('Le tantième doit être supérieur à 0.'),
@@ -67,7 +67,7 @@ export const sousChargeSchema = z.object({
 });
 
 export const depenseSchema = z.object({
-  sous_charge_id: z.number({ required_error: 'La sous-charge est obligatoire.' }),
+  sous_charge_id: z.number({ message: 'La sous-charge est obligatoire.' }),
   date: z.string().min(1, 'La date est obligatoire.'),
   montant: z.number().positive('Le montant doit être supérieur à 0.'),
   description: z.string().min(1, 'La description est obligatoire.').max(1000),

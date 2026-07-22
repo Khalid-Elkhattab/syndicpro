@@ -3,8 +3,8 @@
 namespace App\Repositories;
 
 use App\Models\HorsBudget;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class HorsBudgetRepository extends BaseRepository
 {
@@ -28,18 +28,6 @@ class HorsBudgetRepository extends BaseRepository
         }
 
         $perPage = min((int) ($filters['per_page'] ?? 20), 100);
-
         return $query->paginate($perPage);
-    }
-
-    public function sumByResidence(int $residenceId, ?int $periodeId = null): float
-    {
-        $query = $this->model->where('residence_id', $residenceId);
-
-        if ($periodeId) {
-            $query->whereHas('residence.periodes', fn($q) => $q->where('id', $periodeId));
-        }
-
-        return (float) $query->sum('montant');
     }
 }

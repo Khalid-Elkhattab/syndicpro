@@ -1,5 +1,3 @@
-import { motion, useReducedMotion } from 'framer-motion';
-
 interface ProgressBarProps {
   value: number;
   max?: number;
@@ -33,20 +31,17 @@ export function ProgressBar({
   }
 
   const height = size === 'sm' ? 'h-2' : 'h-3';
-  const shouldReduceMotion = useReducedMotion();
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <div className={`flex-1 ${height} bg-surface-200 rounded-full overflow-hidden`}>
-        <motion.div
+        <div
           role="progressbar"
           aria-valuenow={percentage}
           aria-valuemin={0}
           aria-valuemax={100}
-          initial={shouldReduceMotion ? { width: `${percentage}%` } : { width: 0 }}
-          animate={{ width: `${percentage}%` }}
-          transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.6, ease: 'easeOut' }}
-          className={`${height} rounded-full ${barColor}`}
+          className={`${height} rounded-full ${barColor} transition-all duration-500 ease-out`}
+          style={{ width: `${percentage}%` }}
         />
       </div>
       {showLabel && (

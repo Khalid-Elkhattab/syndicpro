@@ -27,9 +27,9 @@ export const depenseApi = {
     );
   },
 
-  show: (residenceId: number, id: number) =>
+  show: (id: number) =>
     axiosInstance.get<ApiResponse<Depense>>(
-      `/api/syndic/residences/${residenceId}/depenses/${id}`
+      `/api/syndic/depenses/${id}`
     ),
 
   store: (residenceId: number, formData: FormData) =>
@@ -39,15 +39,15 @@ export const depenseApi = {
       { headers: { 'Content-Type': 'multipart/form-data' } }
     ),
 
-  update: (residenceId: number, id: number, data: { date?: string; montant?: number; description?: string }) =>
+  update: (id: number, data: { date?: string; montant?: number; description?: string }) =>
     axiosInstance.put<ApiResponse<Depense>>(
-      `/api/syndic/residences/${residenceId}/depenses/${id}`,
+      `/api/syndic/depenses/${id}`,
       data
     ),
 
-  destroy: (residenceId: number, id: number) =>
+  destroy: (id: number) =>
     axiosInstance.delete<ApiResponse<null>>(
-      `/api/syndic/residences/${residenceId}/depenses/${id}`
+      `/api/syndic/depenses/${id}`
     ),
 
   getJustificatifUrl: (id: number) =>

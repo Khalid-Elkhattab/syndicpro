@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Edit2, Trash2, Building } from 'lucide-react';
+import { useResidenceStore } from '@/store/residenceStore';
 import { useResidences } from '@/hooks/useResidences';
 import { useImmeubles, useCreateImmeuble, useUpdateImmeuble, useDeleteImmeuble } from '@/hooks/useImmeubles';
 import { Modal } from '@/components/ui/Modal';
@@ -11,11 +12,13 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { DataTable } from '@/components/ui/DataTable';
 import { immeubleSchema, type ImmeubleFormData } from '@/utils/schemas';
 import { ErrorState } from '@/components/ui/ErrorState';
-import type { Immeuble, Residence } from '@/types/entities.types';
+import type { Immeuble } from '@/types/entities.types';
 
 export default function ImmeublesPage() {
+  const { activeResidence } = useResidenceStore();
+  const residenceId = activeResidence?.id ?? 0;
   const { data: residences } = useResidences();
-  const { data: immeubles, isLoading, isError, refetch } = useImmeubles();
+  const { data: immeubles, isLoading, isError, refetch } = useImmeubles(residenceId);
   const createMutation = useCreateImmeuble();
   const updateMutation = useUpdateImmeuble();
   const deleteMutation = useDeleteImmeuble();
@@ -24,20 +27,17 @@ export default function ImmeublesPage() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [editing, setEditing] = useState<Immeuble | null>(null);
   const [deleting, setDeleting] = useState<Immeuble | null>(null);
-  const [filterResidence, setFilterResidence] = useState<number | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ImmeubleFormData>({
     resolver: zodResolver(immeubleSchema),
   });
 
-  const filtered = filterResidence
-    ? (immeubles ?? []).filter((i) => i.residence_id === filterResidence)
-    : (immeubles ?? []);
+  const filtered = (immeubles ?? []);
 
-  const openCreate = (residenceId?: number) => {
+  const openCreate = () => {
     setEditing(null);
-    reset({ residence_id: residenceId ?? filterResidence ?? 0, nom: '' });
+    reset({ residence_id: residenceId, nom: '' });
     setIsModalOpen(true);
   };
 
@@ -89,7 +89,7 @@ export default function ImmeublesPage() {
       </div>
     )},
     { key: 'residence', label: 'Résidence', render: (row: Immeuble) => row.residence?.nom ?? '—' },
-    { key: 'nb_appartements', label: 'Appartements', render: (row: Immeuble) => row.nb_appartements ?? 0 },
+    { key: 'nb_appartements', label: 'Appartements', render: (row: Immeuble) => row.appartements?.length ?? 0 },
     {
       key: 'actions', label: '', width: 'w-20',
       render: (row: Immeuble) => (
@@ -117,17 +117,9 @@ export default function ImmeublesPage() {
         </button>
       </div>
 
-      <div className="mb-4 flex items-center gap-3">
-        <label className="text-sm text-text-secondary">Filtrer par résidence :</label>
-        <select
-          value={filterResidence ?? ''}
-          onChange={(e) => setFilterResidence(e.target.value ? Number(e.target.value) : undefined)}
-          className="px-3 py-1.5 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
-        >
-          <option value="">Toutes</option>
-          {residences?.map((r) => <option key={r.id} value={r.id}>{r.nom}</option>)}
-        </select>
-      </div>
+      {!activeResidence && residences && residences.length > 0 && (
+        <div className="mb-4 text-sm text-text-muted">Sélectionnez une résidence dans le menu de gauche.</div>
+      )}
 
       {isLoading ? (
         <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-12 bg-surface-100 rounded-lg animate-pulse" />)}</div>

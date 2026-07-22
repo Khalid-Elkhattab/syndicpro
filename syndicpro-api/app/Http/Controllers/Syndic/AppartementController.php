@@ -17,21 +17,17 @@ class AppartementController extends Controller
         private readonly AppartementService $service
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, int $residence): JsonResponse
     {
-        $syndicId = $request->user()->id;
-        $filters = $request->only(['residence_id', 'immeuble_id']);
+        $filters = $request->only(['immeuble_id']);
 
-        $appartements = $this->service->findBySyndic($syndicId);
+        $query = $this->service->findByResidence($residence);
 
-        if (!empty($filters['residence_id'])) {
-            $appartements = $appartements->where('residence_id', $filters['residence_id']);
-        }
         if (!empty($filters['immeuble_id'])) {
-            $appartements = $appartements->where('immeuble_id', $filters['immeuble_id']);
+            $query = $query->where('immeuble_id', $filters['immeuble_id']);
         }
 
-        return ApiResponse::success(AppartementResource::collection($appartements->values()));
+        return ApiResponse::success(AppartementResource::collection($query->values()));
     }
 
     public function store(StoreAppartementRequest $request): JsonResponse

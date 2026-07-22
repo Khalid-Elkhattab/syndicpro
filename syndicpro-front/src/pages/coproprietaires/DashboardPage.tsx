@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion';
 import { useAuthStore } from '@/store/authStore';
 import { useCoproDashboard } from '@/hooks/useCoproDashboard';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
-import { Building, CreditCard, AlertTriangle, Clock, FileText, MessageSquare } from 'lucide-react';
+import { CreditCard, AlertTriangle, Clock, MessageSquare } from 'lucide-react';
 import { SkeletonLine, SkeletonRect } from '@/components/ui/Skeleton';
 import { ErrorState } from '@/components/ui/ErrorState';
 

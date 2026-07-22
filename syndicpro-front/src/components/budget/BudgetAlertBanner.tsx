@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { memo } from 'react';
+import { motion } from '@/lib/motion';
 import type { BudgetSummary } from '@/api/budget.api';
 
 interface BudgetAlertBannerProps {
@@ -6,7 +7,7 @@ interface BudgetAlertBannerProps {
   onScrollToDepassed?: () => void;
 }
 
-export function BudgetAlertBanner({ summary, onScrollToDepassed }: BudgetAlertBannerProps) {
+export const BudgetAlertBanner = memo(function BudgetAlertBanner({ summary, onScrollToDepassed }: BudgetAlertBannerProps) {
   if (!summary) return null;
 
   const depassedCount = summary.par_compte.filter((c) => c.est_depasse).length;
@@ -40,4 +41,4 @@ export function BudgetAlertBanner({ summary, onScrollToDepassed }: BudgetAlertBa
       )}
     </motion.div>
   );
-}
+});

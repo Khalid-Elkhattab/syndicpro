@@ -25,9 +25,9 @@ export const horsBudgetApi = {
     );
   },
 
-  show: (residenceId: number, id: number) =>
+  show: (id: number) =>
     axiosInstance.get<ApiResponse<HorsBudget>>(
-      `/api/syndic/residences/${residenceId}/hors-budgets/${id}`
+      `/api/syndic/hors-budgets/${id}`
     ),
 
   store: (residenceId: number, formData: FormData) =>
@@ -37,15 +37,15 @@ export const horsBudgetApi = {
       { headers: { 'Content-Type': 'multipart/form-data' } }
     ),
 
-  update: (residenceId: number, id: number, data: { date?: string; montant?: number; description?: string }) =>
+  update: (id: number, data: { date?: string; montant?: number; description?: string }) =>
     axiosInstance.put<ApiResponse<HorsBudget>>(
-      `/api/syndic/residences/${residenceId}/hors-budgets/${id}`,
+      `/api/syndic/hors-budgets/${id}`,
       data
     ),
 
-  destroy: (residenceId: number, id: number) =>
+  destroy: (id: number) =>
     axiosInstance.delete<ApiResponse<null>>(
-      `/api/syndic/residences/${residenceId}/hors-budgets/${id}`
+      `/api/syndic/hors-budgets/${id}`
     ),
 
   getJustificatifUrl: (id: number) =>

@@ -1,15 +1,12 @@
-import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Paperclip, AlertTriangle } from 'lucide-react';
+import { useState, useMemo, lazy, Suspense } from 'react';
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useResidenceStore } from '@/store/residenceStore';
 import { useUIStore } from '@/store/uiStore';
-import { DataTable } from '@/components/ui/DataTable';
 import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { FormField } from '@/components/ui/FormField';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Button } from '@/components/ui/Button';
 import {
   useCompteCharges,
   useCreateCompteCharge,
@@ -22,14 +19,18 @@ import {
 } from '@/hooks/useCharges';
 import { useDepenses, useCreateDepense, useUpdateDepense, useDeleteDepense } from '@/hooks/useDepenses';
 import { useHorsBudgets, useCreateHorsBudget, useUpdateHorsBudget, useDeleteHorsBudget } from '@/hooks/useHorsBudgets';
-import { DepenseFormModal } from '@/components/charges/DepenseFormModal';
-import { formatCurrency } from '@/utils/formatCurrency';
-import { formatDate } from '@/utils/formatDate';
+import { ErrorState } from '@/components/ui/ErrorState';
+
+const preloadDepenseFormModal = () => import('@/components/charges/DepenseFormModal');
+const DepenseFormModal = lazy(() => preloadDepenseFormModal().then(m => ({ default: m.DepenseFormModal })));
+const preloadDepensesTab = () => import('./ChargesDepensesDepensesTab');
+const preloadHorsBudgetTab = () => import('./ChargesDepensesHorsBudgetTab');
+const DepensesTab = lazy(() => preloadDepensesTab().then(m => ({ default: m.default })));
+const HorsBudgetTab = lazy(() => preloadHorsBudgetTab().then(m => ({ default: m.default })));
 import type { CompteCharge, SousCharge, Depense, HorsBudget } from '@/types/entities.types';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ErrorState } from '@/components/ui/ErrorState';
 
 const tabs = [
   { id: 'comptes', label: 'Comptes Charges' },
@@ -40,16 +41,6 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]['id'];
 
-const compteChargeSchema = z.object({
-  nom: z.string().min(1, 'Le nom est obligatoire.').max(150),
-  description: z.string().max(500).optional().nullable(),
-});
-
-const sousChargeSchema = z.object({
-  nom: z.string().min(1, 'Le nom est obligatoire.').max(150),
-  description: z.string().max(500).optional().nullable(),
-  compte_charge_id: z.number({ required_error: 'Le compte de charges est obligatoire.' }),
-});
 
 export default function ChargesDepensesPage() {
   const activeResidence = useResidenceStore((s) => s.activeResidence);
@@ -122,6 +113,7 @@ export default function ChargesDepensesPage() {
   }, [compteCharges, sousChargesAll]);
 
   const openCreateModal = (type: string) => {
+    if (type === 'depenses' || type === 'horsBudget') preloadDepenseFormModal();
     setModalType('create');
     setSelectedCompteCharge(null);
     setSelectedSousCharge(null);
@@ -156,22 +148,30 @@ export default function ChargesDepensesPage() {
   };
 
   const handleDelete = async () => {
-    const { type, id } = deleteConfirm;
-    if (type === 'comptes') {
-      await deleteCompteCharge.mutateAsync({ residenceId, id });
-    } else if (type === 'sousCharges') {
-      const sc = sousChargesAll.find((s) => s.id === id);
-      await deleteSousCharge.mutateAsync({
-        compteChargeId: sc?.compte_charge_id ?? 0,
-        id,
-        residenceId,
-      });
-    } else if (type === 'depenses') {
-      await deleteDepense.mutateAsync({ residenceId, id });
-    } else {
-      await deleteHorsBudget.mutateAsync({ residenceId, id });
+    try {
+      const { type, id } = deleteConfirm;
+      if (type === 'comptes') {
+        await deleteCompteCharge.mutateAsync({ residenceId, id });
+      } else if (type === 'sousCharges') {
+        const sc = sousChargesAll.find((s) => s.id === id);
+        await deleteSousCharge.mutateAsync({
+          compteChargeId: sc?.compte_charge_id ?? 0,
+          id,
+          residenceId,
+        });
+      } else if (type === 'depenses') {
+        await deleteDepense.mutateAsync({ residenceId, id });
+      } else {
+        await deleteHorsBudget.mutateAsync({ residenceId, id });
+      }
+      setDeleteConfirm({ open: false, type: '', id: 0, label: '' });
+    } catch (error: unknown) {
+      const msg =
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Erreur lors de la suppression.';
+      addToast('error', msg);
+      setDeleteConfirm({ open: false, type: '', id: 0, label: '' });
     }
-    setDeleteConfirm({ open: false, type: '', id: 0, label: '' });
   };
 
   const handleToggleActif = async (cc: CompteCharge) => {
@@ -254,6 +254,11 @@ export default function ChargesDepensesPage() {
   const chargeDepRefetch =
     activeTab === 'depenses' ? depensesRefetch : horsBudgetsRefetch;
 
+  const preloadTab = (tabId: TabId) => {
+    if (tabId === 'depenses') preloadDepensesTab();
+    else if (tabId === 'horsBudget') preloadHorsBudgetTab();
+  };
+
   if (chargeDepError) {
     return (
       <div className="p-6">
@@ -271,6 +276,7 @@ export default function ChargesDepensesPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
+            onMouseEnter={() => preloadTab(tab.id)}
             className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
               activeTab === tab.id
                 ? 'bg-white text-brand-600 shadow-sm'
@@ -282,16 +288,8 @@ export default function ChargesDepensesPage() {
         ))}
       </div>
 
-      <AnimatePresence mode="wait">
-        {activeTab === 'comptes' && (
-          <motion.div
-            key="comptes"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            className="bg-white rounded-xl shadow-card"
-          >
+      {activeTab === 'comptes' && (
+        <div className="bg-white rounded-xl shadow-card">
           <div className="p-6">
             <div className="flex justify-end mb-4">
               <button
@@ -382,7 +380,7 @@ export default function ChargesDepensesPage() {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
         )}
 
         {activeTab === 'sousCharges' && (
@@ -461,252 +459,47 @@ export default function ChargesDepensesPage() {
         )}
 
         {activeTab === 'depenses' && (
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
-              <div className="flex items-center gap-2 flex-wrap">
-                <label className="text-sm text-text-secondary">Compte :</label>
-                <select
-                  value={filterCompteChargeDepenses ?? ''}
-                  onChange={(e) => setFilterCompteChargeDepenses(e.target.value ? Number(e.target.value) : null)}
-                  className="px-3 py-1.5 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500"
-                >
-                  <option value="">Tous</option>
-                  {compteCharges.map((cc) => (
-                    <option key={cc.id} value={cc.id}>{cc.nom}</option>
-                  ))}
-                </select>
-                <label className="text-sm text-text-secondary ml-2">Du :</label>
-                <input
-                  type="date"
-                  value={depenseDateDebut}
-                  onChange={(e) => { setDepenseDateDebut(e.target.value); setDepensePage(1); }}
-                  className="px-3 py-1.5 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500"
-                />
-                <label className="text-sm text-text-secondary">Au :</label>
-                <input
-                  type="date"
-                  value={depenseDateFin}
-                  onChange={(e) => { setDepenseDateFin(e.target.value); setDepensePage(1); }}
-                  className="px-3 py-1.5 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500"
-                />
-                {(filterCompteChargeDepenses || depenseDateDebut || depenseDateFin) && (
-                  <button
-                    onClick={() => { setFilterCompteChargeDepenses(null); setDepenseDateDebut(''); setDepenseDateFin(''); setDepensePage(1); }}
-                    className="text-xs text-brand-600 hover:underline"
-                  >
-                    Réinitialiser
-                  </button>
-                )}
-              </div>
-              <button
-                onClick={() => openCreateModal('depenses')}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
-              >
-                <Plus className="w-4 h-4" /> Nouvelle dépense
-              </button>
-            </div>
-
-            {loadingDepenses ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-12 bg-surface-100 rounded-lg animate-pulse" />
-                ))}
-              </div>
-            ) : depensesData.length === 0 ? (
-              <EmptyState
-                title="Aucune dépense enregistrée"
-                description="Toutes les dépenses de cette période apparaîtront ici."
-                action={{ label: '+ Ajouter une dépense', onClick: () => openCreateModal('depenses') }}
-              />
-            ) : (
-              <div className="overflow-x-auto rounded-lg border border-surface-200">
-                <table className="w-full min-w-[800px]">
-                  <thead>
-                    <tr className="bg-surface-100 text-left">
-                      <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Sous-Charge</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Compte</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider text-right">Montant</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Description</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider text-center">Justificatif</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {depensesData.map((dep) => (
-                      <tr key={dep.id} className="border-t border-surface-100 hover:bg-brand-50/50 transition-colors">
-                        <td className="px-4 py-3 text-sm text-text-primary">{formatDate(dep.date)}</td>
-                        <td className="px-4 py-3 text-sm text-text-primary">{dep.sous_charge?.nom ?? '—'}</td>
-                        <td className="px-4 py-3 text-sm text-text-secondary">{dep.sous_charge?.compte_charge?.nom ?? '—'}</td>
-                        <td className="px-4 py-3 text-sm font-mono font-semibold text-text-primary text-right">
-                          {formatCurrency(dep.montant)}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-text-secondary max-w-xs truncate">{dep.description}</td>
-                        <td className="px-4 py-3 text-center">
-                          {dep.has_justificatif ? (
-                            <a
-                              href={dep.justificatif_url ?? '#'}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center p-1.5 rounded-lg text-brand-600 hover:bg-brand-50 transition-colors"
-                              title="Voir le justificatif"
-                            >
-                              <Paperclip className="w-4 h-4" />
-                            </a>
-                          ) : (
-                            <span className="text-text-muted text-sm">—</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button onClick={() => openEditModal('depenses', dep)} className="p-1.5 rounded-lg text-text-muted hover:text-brand-600 hover:bg-brand-50 transition-colors">
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => confirmDelete('depenses', dep.id, formatDate(dep.date))} className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger-light transition-colors">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {depensesMeta && depensesMeta.total > depensesMeta.per_page && (
-                  <div className="flex items-center justify-between px-4 py-3 border-t border-surface-200 bg-surface-50">
-                    <span className="text-sm text-text-muted">
-                      {(depensesMeta.current_page - 1) * depensesMeta.per_page + 1}–{Math.min(depensesMeta.current_page * depensesMeta.per_page, depensesMeta.total)} sur {depensesMeta.total}
-                    </span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setDepensePage((p) => Math.max(1, p - 1))}
-                        disabled={depensePage <= 1}
-                        className="px-3 py-1 text-sm border border-surface-300 rounded-lg hover:bg-surface-100 disabled:opacity-50"
-                      >
-                        Précédent
-                      </button>
-                      <button
-                        onClick={() => setDepensePage((p) => p + 1)}
-                        disabled={depensePage >= (depensesMeta?.last_page ?? 1)}
-                        className="px-3 py-1 text-sm border border-surface-300 rounded-lg hover:bg-surface-100 disabled:opacity-50"
-                      >
-                        Suivant
-                      </button>
-            </div>
-          </div>
+          <Suspense fallback={<div className="h-64 bg-surface-100 rounded-xl animate-pulse" />}>
+            <DepensesTab
+              depensesData={depensesData} loadingDepenses={loadingDepenses}
+              depensesMeta={depensesMeta} depensePage={depensePage}
+              filterCompteChargeDepenses={filterCompteChargeDepenses}
+              depenseDateDebut={depenseDateDebut} depenseDateFin={depenseDateFin}
+              compteCharges={compteCharges}
+              onOpenCreate={() => openCreateModal('depenses')}
+              onOpenEdit={(item) => openEditModal('depenses', item)}
+              onDelete={confirmDelete}
+              onFilterChange={(f) => {
+                if (f.compteChargeId !== undefined) setFilterCompteChargeDepenses(f.compteChargeId);
+                if (f.dateDebut !== undefined) setDepenseDateDebut(f.dateDebut);
+                if (f.dateFin !== undefined) setDepenseDateFin(f.dateFin);
+                setDepensePage(1);
+              }}
+              onPageChange={setDepensePage}
+              onResetFilters={() => { setFilterCompteChargeDepenses(null); setDepenseDateDebut(''); setDepenseDateFin(''); setDepensePage(1); }}
+            />
+          </Suspense>
         )}
-      </div>
-    )}
-  </div>
-    )}
 
         {activeTab === 'horsBudget' && (
-          <motion.div
-            key="horsBudget"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            className="bg-white rounded-xl shadow-card"
-          >
-          <div className="p-6 bg-warning-light/30">
-            <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="flex items-center gap-1.5 text-warning">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="text-sm font-medium text-warning-dark">Dépenses hors budget</span>
-                </div>
-                <label className="text-sm text-text-secondary ml-2">Du :</label>
-                <input
-                  type="date"
-                  value={hbDateDebut}
-                  onChange={(e) => { setHbDateDebut(e.target.value); setHbPage(1); }}
-                  className="px-3 py-1.5 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500"
-                />
-                <label className="text-sm text-text-secondary">Au :</label>
-                <input
-                  type="date"
-                  value={hbDateFin}
-                  onChange={(e) => { setHbDateFin(e.target.value); setHbPage(1); }}
-                  className="px-3 py-1.5 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500"
-                />
-                {(hbDateDebut || hbDateFin) && (
-                  <button
-                    onClick={() => { setHbDateDebut(''); setHbDateFin(''); setHbPage(1); }}
-                    className="text-xs text-brand-600 hover:underline"
-                  >
-                    Réinitialiser
-                  </button>
-                )}
-              </div>
-              <button
-                onClick={() => openCreateModal('horsBudget')}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
-              >
-                <Plus className="w-4 h-4" /> Nouvelle dépense hors budget
-              </button>
-            </div>
-
-            {loadingHorsBudgets ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-12 bg-surface-100 rounded-lg animate-pulse" />
-                ))}
-              </div>
-            ) : horsBudgetsData.length === 0 ? (
-              <EmptyState
-                title="Aucune dépense hors budget"
-                description="Les dépenses non prévues au budget apparaîtront ici."
-                action={{ label: '+ Ajouter une dépense', onClick: () => openCreateModal('horsBudget') }}
-              />
-            ) : (
-              <div className="overflow-x-auto rounded-lg border border-surface-200">
-                <table className="w-full min-w-[600px]">
-                  <thead>
-                    <tr className="bg-surface-100 text-left">
-                      <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider text-right">Montant</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Description</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider text-center">Justificatif</th>
-                      <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {horsBudgetsData.map((hb) => (
-                      <tr key={hb.id} className="border-t border-surface-100 hover:bg-brand-50/50 transition-colors">
-                        <td className="px-4 py-3 text-sm text-text-primary">{formatDate(hb.date)}</td>
-                        <td className="px-4 py-3 text-sm font-mono font-semibold text-text-primary text-right">
-                          {formatCurrency(hb.montant)}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-text-secondary max-w-xs truncate">{hb.description}</td>
-                        <td className="px-4 py-3 text-center">
-                          {hb.has_justificatif ? (
-                            <a href={hb.justificatif_url ?? '#'} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center p-1.5 rounded-lg text-brand-600 hover:bg-brand-50 transition-colors">
-                              <Paperclip className="w-4 h-4" />
-                            </a>
-                          ) : (
-                            <span className="text-text-muted text-sm">—</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button onClick={() => openEditModal('horsBudget', hb)} className="p-1.5 rounded-lg text-text-muted hover:text-brand-600 hover:bg-brand-50 transition-colors">
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => confirmDelete('horsBudget', hb.id, formatDate(hb.date))} className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger-light transition-colors">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </motion.div>
+          <Suspense fallback={<div className="h-64 bg-surface-100 rounded-xl animate-pulse" />}>
+            <HorsBudgetTab
+              horsBudgetsData={horsBudgetsData} loadingHorsBudgets={loadingHorsBudgets}
+              horsBudgetsMeta={horsBudgetsMeta} hbPage={hbPage}
+              hbDateDebut={hbDateDebut} hbDateFin={hbDateFin}
+              onOpenCreate={() => openCreateModal('horsBudget')}
+              onOpenEdit={(item) => openEditModal('horsBudget', item)}
+              onDelete={confirmDelete}
+              onFilterChange={(f) => {
+                if (f.dateDebut !== undefined) setHbDateDebut(f.dateDebut);
+                if (f.dateFin !== undefined) setHbDateFin(f.dateFin);
+                setHbPage(1);
+              }}
+              onPageChange={setHbPage}
+              onResetFilters={() => { setHbDateDebut(''); setHbDateFin(''); setHbPage(1); }}
+            />
+          </Suspense>
         )}
-      </AnimatePresence>
 
       <ConfirmDialog
         isOpen={deleteConfirm.open}
@@ -738,25 +531,33 @@ export default function ChargesDepensesPage() {
       )}
 
       {isModalOpen && (activeTab === 'depenses' || activeTab === 'horsBudget') && (
-        <DepenseFormModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={activeTab === 'horsBudget' ? handleSubmitHorsBudget : handleSubmitDepense}
-          comptesCharges={comptesWithSousCharges}
-          mode={activeTab === 'horsBudget' ? 'horsBudget' : 'depense'}
-          onError={(msg) => addToast('error', msg)}
-          initialData={
-            selectedDepense
-              ? {
-                  id: selectedDepense.id,
-                  sous_charge_id: selectedDepense.sous_charge_id,
-                  date: selectedDepense.date,
-                  montant: selectedDepense.montant,
-                  description: selectedDepense.description,
-                }
-              : undefined
-          }
-        />
+        <Suspense fallback={
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div className="bg-white rounded-xl p-6 shadow-xl">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-brand-600 border-t-transparent mx-auto" />
+            </div>
+          </div>
+        }>
+          <DepenseFormModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onSubmit={activeTab === 'horsBudget' ? handleSubmitHorsBudget : handleSubmitDepense}
+            comptesCharges={comptesWithSousCharges}
+            mode={activeTab === 'horsBudget' ? 'horsBudget' : 'depense'}
+            onError={(msg) => addToast('error', msg)}
+            initialData={
+              selectedDepense
+                ? {
+                    id: selectedDepense.id,
+                    sous_charge_id: selectedDepense.sous_charge_id,
+                    date: selectedDepense.date,
+                    montant: selectedDepense.montant,
+                    description: selectedDepense.description,
+                  }
+                : undefined
+            }
+          />
+        </Suspense>
       )}
     </div>
   );
@@ -845,7 +646,7 @@ function SousChargeModal({
   initialData: SousCharge | null;
   compteCharges: CompteCharge[];
 }) {
-  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm({
+  const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       nom: initialData?.nom ?? '',
       description: initialData?.description ?? '',

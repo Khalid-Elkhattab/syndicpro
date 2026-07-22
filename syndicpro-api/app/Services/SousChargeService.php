@@ -38,8 +38,11 @@ class SousChargeService
     {
         $sousCharge = $this->repository->findOrFail($id);
 
-        if ($sousCharge->depenses()->count() > 0) {
-            throw new \InvalidArgumentException('Cette sous-charge a des dépenses associées.');
+        $sousCharge->load('depenses');
+
+        foreach ($sousCharge->depenses as $depense) {
+            $depense->clearMediaCollection('justificatifs');
+            $depense->delete();
         }
 
         return $this->repository->delete($id);

@@ -1,7 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/lib/motion';
 import { Upload, X, FileText, Image } from 'lucide-react';
 
 interface DepenseFormModalProps {
@@ -42,8 +41,6 @@ export function DepenseFormModal({
 }: DepenseFormModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedCompteCharge, setSelectedCompteCharge] = useState<number | null>(null);
-
   const grouped: GroupedSousCharges = {};
   comptesCharges.forEach((cc) => {
     if (cc.sous_charges && cc.sous_charges.length > 0) {
@@ -61,7 +58,7 @@ export function DepenseFormModal({
     setValue,
     reset,
     formState: { errors },
-  } = useForm({
+  } = useForm<Record<string, unknown>>({
     defaultValues: {
       sous_charge_id: initialData?.sous_charge_id ?? '',
       date: initialData?.date ?? new Date().toISOString().split('T')[0],
@@ -69,18 +66,6 @@ export function DepenseFormModal({
       description: initialData?.description ?? '',
     },
   });
-
-  const watchedSousChargeId = watch('sous_charge_id');
-  const watchedMontant = watch('montant');
-
-  const formatAmount = (value: string): string => {
-    const num = parseFloat(value.replace(/[^0-9.]/g, ''));
-    if (isNaN(num)) return '';
-    return new Intl.NumberFormat('fr-MA', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(num);
-  };
 
   const handleMontantChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/[^0-9.]/g, '');
@@ -171,7 +156,7 @@ export function DepenseFormModal({
                     <option value="">Sélectionnez une sous-charge</option>
                     {Object.entries(grouped).map(([ccId, cc]) => (
                       <optgroup key={ccId} label={cc.compteChargeNom}>
-                        {cc.sousCharges.map((sc) => (
+                        {cc.sousCharges.map((sc: { id: number; nom: string }) => (
                           <option key={sc.id} value={sc.id}>
                             {sc.nom}
                           </option>
@@ -240,7 +225,7 @@ export function DepenseFormModal({
                     <p className="text-sm text-danger">{errors.description.message as string}</p>
                   )}
                   <span className="text-xs text-text-muted ml-auto">
-                    {(watch('description') ?? '').length}/1000
+                    {((watch('description') as string) ?? '').length}/1000
                   </span>
                 </div>
               </div>

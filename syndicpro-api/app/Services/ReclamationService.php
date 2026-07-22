@@ -33,6 +33,7 @@ class ReclamationService
             'statut' => ReclamationStatut::Nouveau,
         ]);
 
+        $reclamation->load('residence.syndic');
         $syndic = $reclamation->residence->syndic;
         $syndic->notify(new NouvelleReclamationNotification($reclamation));
 

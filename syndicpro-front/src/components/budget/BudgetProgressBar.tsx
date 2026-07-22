@@ -1,11 +1,12 @@
-import { motion } from 'framer-motion';
+import { memo } from 'react';
+import { motion } from '@/lib/motion';
 
 interface BudgetProgressBarProps {
   percentage: number;
   showLabel?: boolean;
 }
 
-export function BudgetProgressBar({ percentage, showLabel = true }: BudgetProgressBarProps) {
+export const BudgetProgressBar = memo(function BudgetProgressBar({ percentage, showLabel = true }: BudgetProgressBarProps) {
   const getColor = () => {
     if (percentage >= 85) return 'bg-danger';
     if (percentage >= 60) return 'bg-warning';
@@ -29,4 +30,4 @@ export function BudgetProgressBar({ percentage, showLabel = true }: BudgetProgre
       )}
     </div>
   );
-}
+});

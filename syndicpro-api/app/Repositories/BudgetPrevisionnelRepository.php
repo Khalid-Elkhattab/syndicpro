@@ -135,8 +135,8 @@ class BudgetPrevisionnelRepository extends BaseRepository
 
     public function createInitialBudgetsForPeriode(int $periodeId): Collection
     {
-        $periode = \App\Models\Periode::with('residence.compteCharges')->findOrFail($periodeId);
-        $compteCharges = $periode->residence->compteCharges()->where('is_active', true)->get();
+        $periode = \App\Models\Periode::with(['residence.compteCharges' => fn($q) => $q->where('is_active', true)])->findOrFail($periodeId);
+        $compteCharges = $periode->residence->compteCharges;
 
         $budgets = [];
 
@@ -148,6 +148,32 @@ class BudgetPrevisionnelRepository extends BaseRepository
                 'montant_consomme' => 0,
             ]);
             $budgets[] = $budget;
+        }
+
+        return new Collection($budgets);
+    }
+
+    public function syncCompteChargeToPeriods(int $compteChargeId, int $residenceId): Collection
+    {
+        $periodes = \App\Models\Periode::where('residence_id', $residenceId)->get();
+        $existingPeriodeIds = $this->model
+            ->where('compte_charge_id', $compteChargeId)
+            ->whereIn('periode_id', $periodes->pluck('id'))
+            ->pluck('periode_id')
+            ->toArray();
+
+        $budgets = [];
+
+        foreach ($periodes as $periode) {
+            if (in_array($periode->id, $existingPeriodeIds, true)) {
+                continue;
+            }
+            $budgets[] = $this->model->create([
+                'periode_id' => $periode->id,
+                'compte_charge_id' => $compteChargeId,
+                'montant_prevu' => 0,
+                'montant_consomme' => 0,
+            ]);
         }
 
         return new Collection($budgets);

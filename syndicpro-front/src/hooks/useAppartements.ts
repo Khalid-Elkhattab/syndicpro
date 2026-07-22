@@ -8,7 +8,7 @@ export const useAppartements = (residenceId?: number, params?: { immeuble_id?: n
     queryFn: async () => {
       if (!residenceId) return [];
       const { data } = await appartementsApi.index(residenceId, params);
-      return data.data as Appartement[];
+      return (data.data ?? []) as Appartement[];
     },
     enabled: !!residenceId,
   });
@@ -18,7 +18,7 @@ export const useMyAppartements = () =>
     queryKey: ['appartements', 'mine'],
     queryFn: async () => {
       const { data } = await appartementsApi.getMine();
-      return data.data as Appartement[];
+      return (data.data ?? []) as Appartement[];
     },
   });
 

@@ -1,4 +1,5 @@
-import { motion, useReducedMotion } from 'framer-motion';
+import { memo } from 'react';
+import { motion, useReducedMotion } from '@/lib/motion';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { BudgetRow } from './BudgetRow';
 import type { BudgetSummary } from '@/api/budget.api';
@@ -10,7 +11,7 @@ interface BudgetTableProps {
   onEditBudget?: (budgetId: number, label: string, currentValue: number) => void;
 }
 
-export function BudgetTable({ summary, isLoading, onAddExpense, onEditBudget }: BudgetTableProps) {
+export const BudgetTable = memo(function BudgetTable({ summary, isLoading, onAddExpense, onEditBudget }: BudgetTableProps) {
   const shouldReduceMotion = useReducedMotion();
   if (isLoading) {
     return (
@@ -56,12 +57,12 @@ export function BudgetTable({ summary, isLoading, onAddExpense, onEditBudget }: 
       </div>
 
       <div>
-        {summary.par_compte.map((compte, index) => (
+        {summary.par_compte.map((compte) => (
           <motion.div
             key={compte.id}
             initial={shouldReduceMotion ? {} : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={shouldReduceMotion ? { duration: 0 } : { delay: index * 0.05 }}
+            transition={shouldReduceMotion ? { duration: 0 } : { delay: 0 }}
           >
             <BudgetRow compte={compte} onAddExpense={onAddExpense} onEditBudget={onEditBudget} />
           </motion.div>
@@ -99,4 +100,4 @@ export function BudgetTable({ summary, isLoading, onAddExpense, onEditBudget }: 
       </div>
     </div>
   );
-}
+});

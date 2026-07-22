@@ -17,18 +17,9 @@ class ImmeubleController extends Controller
         private readonly ImmeubleService $service
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, int $residence): JsonResponse
     {
-        $syndicId = $request->user()->id;
-        $filters = $request->only(['residence_id']);
-
-        if (!empty($filters)) {
-            $immeubles = $this->service->findBySyndic($syndicId)->filter(fn($i) =>
-                empty($filters['residence_id']) || $i->residence_id == $filters['residence_id']
-            )->values();
-        } else {
-            $immeubles = $this->service->findBySyndic($syndicId);
-        }
+        $immeubles = $this->service->findByResidence($residence);
 
         return ApiResponse::success(ImmeubleResource::collection($immeubles));
     }

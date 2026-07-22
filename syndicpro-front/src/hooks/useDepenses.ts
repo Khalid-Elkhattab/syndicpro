@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { depenseApi, type DepenseFilters } from '@/api/depense.api';
 import type { Depense } from '@/types/entities.types';
-import type { PaginatedResponse } from '@/types/api.types';
+
 
 export const useDepenses = (residenceId: number, filters?: DepenseFilters) =>
   useQuery({
@@ -26,8 +26,10 @@ export const useCreateDepense = () => {
       residenceId: number;
       formData: FormData;
     }) => depenseApi.store(residenceId, formData),
-    onSuccess: (_, { residenceId }) =>
-      qc.invalidateQueries({ queryKey: ['depenses', residenceId] }),
+    onSuccess: (_, { residenceId }) => {
+      qc.invalidateQueries({ queryKey: ['depenses', residenceId], exact: false });
+      qc.invalidateQueries({ queryKey: ['budget', 'summary'], exact: false });
+    },
   });
 };
 
@@ -35,26 +37,30 @@ export const useUpdateDepense = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
-      residenceId,
+      residenceId: _residenceId,
       id,
       data,
     }: {
       residenceId: number;
       id: number;
       data: { date?: string; montant?: number; description?: string };
-    }) => depenseApi.update(residenceId, id, data),
-    onSuccess: (_, { residenceId }) =>
-      qc.invalidateQueries({ queryKey: ['depenses', residenceId] }),
+    }) => depenseApi.update(id, data),
+    onSuccess: (_, { residenceId }) => {
+      qc.invalidateQueries({ queryKey: ['depenses', residenceId], exact: false });
+      qc.invalidateQueries({ queryKey: ['budget', 'summary'], exact: false });
+    },
   });
 };
 
 export const useDeleteDepense = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ residenceId, id }: { residenceId: number; id: number }) =>
-      depenseApi.destroy(residenceId, id),
-    onSuccess: (_, { residenceId }) =>
-      qc.invalidateQueries({ queryKey: ['depenses', residenceId] }),
+    mutationFn: ({ residenceId: _residenceId, id }: { residenceId: number; id: number }) =>
+      depenseApi.destroy(id),
+    onSuccess: (_, { residenceId }) => {
+      qc.invalidateQueries({ queryKey: ['depenses', residenceId], exact: false });
+      qc.invalidateQueries({ queryKey: ['budget', 'summary'], exact: false });
+    },
   });
 };
 

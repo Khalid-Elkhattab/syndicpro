@@ -36,11 +36,9 @@ class DepenseController extends Controller
         return ApiResponse::created(new DepenseResource($depense), 'Dépense enregistrée avec succès.');
     }
 
-    public function show(int $residence, int $depense): JsonResponse
+    public function show(int $depense): JsonResponse
     {
-        $depenseModel = Depense::with(['sousCharge.compteCharge', 'residence'])
-            ->where('residence_id', $residence)
-            ->find($depense);
+        $depenseModel = Depense::with(['sousCharge.compteCharge', 'residence'])->find($depense);
 
         if (!$depenseModel) {
             return ApiResponse::notFound();
@@ -49,13 +47,13 @@ class DepenseController extends Controller
         return ApiResponse::success(new DepenseResource($depenseModel));
     }
 
-    public function update(UpdateDepenseRequest $request, int $residence, int $depense): JsonResponse
+    public function update(UpdateDepenseRequest $request, int $depense): JsonResponse
     {
         $depenseModel = $this->service->update($depense, $request->validated());
         return ApiResponse::success(new DepenseResource($depenseModel), 'Dépense mise à jour avec succès.');
     }
 
-    public function destroy(int $residence, int $depense): JsonResponse
+    public function destroy(int $depense): JsonResponse
     {
         $this->service->delete($depense);
         return ApiResponse::success(null, 'Dépense supprimée avec succès.');

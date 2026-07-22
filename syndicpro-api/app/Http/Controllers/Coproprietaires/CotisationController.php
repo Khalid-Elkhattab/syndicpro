@@ -22,16 +22,16 @@ class CotisationController extends Controller
             ->with(['cotisation', 'paiements', 'appartement']);
 
         if ($request->filled('type')) {
-            $query->whereHas('cotisation', function ($q) use ($request) {
-                $q->where('type', $request->type);
-            });
+            $query->join('cotisations', 'cotisation_details.cotisation_id', '=', 'cotisations.id')
+                  ->where('cotisations.type', $request->type)
+                  ->select('cotisation_details.*');
         }
 
         if ($request->filled('statut')) {
             $query->where('statut', $request->statut);
         }
 
-        $cotisations = $query->orderByDesc('created_at')->paginate($perPage);
+        $cotisations = $query->orderByDesc('cotisation_details.created_at')->paginate($perPage);
 
         return ApiResponse::success(
             CotisationDetailResource::collection($cotisations),

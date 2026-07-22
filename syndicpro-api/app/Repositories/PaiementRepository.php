@@ -18,26 +18,27 @@ class PaiementRepository extends BaseRepository
     public function findByResidence(int $residenceId, array $filters = []): LengthAwarePaginator
     {
         $query = $this->model
-            ->whereHas('cotisationDetail.cotisation', fn($q) =>
-                $q->where('residence_id', $residenceId)
-            )
+            ->join('cotisation_details', 'paiements.cotisation_detail_id', '=', 'cotisation_details.id')
+            ->join('cotisations', 'cotisation_details.cotisation_id', '=', 'cotisations.id')
+            ->where('cotisations.residence_id', $residenceId)
+            ->select('paiements.*')
             ->with([
                 'cotisationDetail.cotisation',
                 'cotisationDetail.appartement.immeuble',
                 'coproprietaire',
             ])
             ->when(isset($filters['coproprietaire_id']), fn($q, $copropId) =>
-                $q->where('coproprietaire_id', $copropId)
+                $q->where('paiements.coproprietaire_id', $copropId)
             )
             ->when(isset($filters['date_debut']), fn($q, $dateDebut) =>
-                $q->where('date_paiement', '>=', $dateDebut)
+                $q->where('paiements.date_paiement', '>=', $dateDebut)
             )
             ->when(isset($filters['date_fin']), fn($q, $dateFin) =>
-                $q->where('date_paiement', '<=', $dateFin)
+                $q->where('paiements.date_paiement', '<=', $dateFin)
             );
 
         $perPage = min($filters['per_page'] ?? 20, 100);
-        return $query->orderByDesc('date_paiement')->paginate($perPage);
+        return $query->orderByDesc('paiements.date_paiement')->paginate($perPage);
     }
 
     public function findDetail(int $cotisationDetailId): ?CotisationDetail
@@ -65,30 +66,28 @@ class PaiementRepository extends BaseRepository
     public function getHistoriqueByAppartement(int $appartementId): Collection
     {
         return $this->model
-            ->whereHas('cotisationDetail', fn($q) =>
-                $q->where('appartement_id', $appartementId)
-            )
+            ->join('cotisation_details', 'paiements.cotisation_detail_id', '=', 'cotisation_details.id')
+            ->where('cotisation_details.appartement_id', $appartementId)
+            ->select('paiements.*')
             ->with(['cotisationDetail.cotisation'])
-            ->orderByDesc('date_paiement')
+            ->orderByDesc('paiements.date_paiement')
             ->get();
     }
 
     public function getTotalPercu(int $residenceId, ?int $periodeId = null): array
     {
         $query = $this->model
-            ->whereHas('cotisationDetail.cotisation', fn($q) =>
-                $q->where('residence_id', $residenceId)
-            );
+            ->join('cotisation_details', 'paiements.cotisation_detail_id', '=', 'cotisation_details.id')
+            ->join('cotisations', 'cotisation_details.cotisation_id', '=', 'cotisations.id')
+            ->where('cotisations.residence_id', $residenceId);
 
         if ($periodeId) {
-            $query->whereHas('cotisationDetail.cotisation', fn($q) =>
-                $q->where('periode_id', $periodeId)
-            );
+            $query->where('cotisations.periode_id', $periodeId);
         }
 
         return [
-            'total_percu' => (float) $query->sum('montant'),
-            'nb_paiements' => $query->count(),
+            'total_percu' => (float) (clone $query)->sum('paiements.montant'),
+            'nb_paiements' => (clone $query)->count('paiements.id'),
         ];
     }
 

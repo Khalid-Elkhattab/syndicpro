@@ -13,9 +13,9 @@ export const sousChargeApi = {
       `/api/syndic/residences/${residenceId}/sous-charges`
     ),
 
-  show: (compteChargeId: number, id: number) =>
+  show: (id: number) =>
     axiosInstance.get<ApiResponse<SousCharge>>(
-      `/api/syndic/comptes-charges/${compteChargeId}/sous-charges/${id}`
+      `/api/syndic/sous-charges/${id}`
     ),
 
   store: (compteChargeId: number, data: { nom: string; description?: string }) =>
@@ -25,17 +25,16 @@ export const sousChargeApi = {
     ),
 
   update: (
-    compteChargeId: number,
     id: number,
     data: { nom?: string; description?: string }
   ) =>
     axiosInstance.put<ApiResponse<SousCharge>>(
-      `/api/syndic/comptes-charges/${compteChargeId}/sous-charges/${id}`,
+      `/api/syndic/sous-charges/${id}`,
       data
     ),
 
-  destroy: (compteChargeId: number, id: number) =>
+  destroy: (id: number) =>
     axiosInstance.delete<ApiResponse<null>>(
-      `/api/syndic/comptes-charges/${compteChargeId}/sous-charges/${id}`
+      `/api/syndic/sous-charges/${id}`
     ),
 };

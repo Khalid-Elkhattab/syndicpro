@@ -1,5 +1,3 @@
-import { motion } from 'framer-motion';
-
 interface CardProps {
   children: React.ReactNode;
   variant?: 'default' | 'highlighted';
@@ -11,20 +9,14 @@ interface CardProps {
 export function Card({ children, variant = 'default', hover = false, className = '', onClick }: CardProps) {
   const baseClasses = 'bg-white rounded-xl shadow-card p-6';
   const variantClasses = variant === 'highlighted' ? 'border-2 border-brand-200' : '';
-  const hoverClasses = hover ? 'cursor-pointer transition-shadow hover:shadow-card-lg' : '';
-
-  const Component = hover ? motion.div : 'div';
-  const motionProps = hover
-    ? { whileHover: { y: -2 }, transition: { duration: 0.2 } }
-    : {};
+  const hoverClasses = hover ? 'cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-lg' : '';
 
   return (
-    <Component
+    <div
       className={`${baseClasses} ${variantClasses} ${hoverClasses} ${className}`}
       onClick={onClick}
-      {...motionProps}
     >
       {children}
-    </Component>
+    </div>
   );
 }

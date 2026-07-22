@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { Plus, Search, FileX, Building2, CreditCard, AlertCircle } from 'lucide-react';
 
 type EmptyStateType = 'default' | 'create' | 'search' | 'error' | 'payment' | 'residence' | 'door' | 'budget' | 'reclamation';
@@ -92,10 +91,8 @@ export function EmptyState({ title, description, action, type = 'default' }: Emp
   const Icon = icons[type];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center justify-center py-16 px-4"
+    <div
+      className="flex flex-col items-center justify-center py-16 px-4 animate-fade-in-up"
       role="status"
       aria-live="polite"
     >
@@ -117,6 +114,6 @@ export function EmptyState({ title, description, action, type = 'default' }: Emp
           {action.label}
         </button>
       )}
-    </motion.div>
+    </div>
   );
 }

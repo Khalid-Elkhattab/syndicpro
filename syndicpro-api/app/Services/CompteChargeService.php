@@ -3,12 +3,15 @@
 namespace App\Services;
 
 use App\Models\CompteCharge;
+use App\Repositories\BudgetPrevisionnelRepository;
 use App\Repositories\CompteChargeRepository;
+use Illuminate\Support\Facades\Cache;
 
 class CompteChargeService
 {
     public function __construct(
-        private readonly CompteChargeRepository $repository
+        private readonly CompteChargeRepository $repository,
+        private readonly BudgetPrevisionnelRepository $budgetRepo,
     ) {}
 
     public function getByResidence(int $residenceId): \Illuminate\Database\Eloquent\Collection
@@ -23,7 +26,15 @@ class CompteChargeService
 
     public function create(array $data, int $residenceId): CompteCharge
     {
-        return $this->repository->create(array_merge($data, ['residence_id' => $residenceId]));
+        $compte = $this->repository->create(array_merge($data, ['residence_id' => $residenceId]));
+
+        $budgets = $this->budgetRepo->syncCompteChargeToPeriods($compte->id, $residenceId);
+
+        foreach ($budgets as $budget) {
+            Cache::forget("budget_summary_{$budget->periode_id}");
+        }
+
+        return $compte;
     }
 
     public function update(int $id, array $data): CompteCharge
@@ -35,12 +46,22 @@ class CompteChargeService
     {
         $compte = $this->repository->findOrFail($id);
 
-        if ($compte->sousCharges()->count() > 0) {
-            throw new \InvalidArgumentException('Ce compte a des sous-charges associées.');
+        $compte->load(['budgetPrevisionnels', 'sousCharges.depenses']);
+
+        $periodeIds = $compte->budgetPrevisionnels->pluck('periode_id')->unique()->toArray();
+
+        foreach ($compte->sousCharges as $sousCharge) {
+            foreach ($sousCharge->depenses as $depense) {
+                $depense->clearMediaCollection('justificatifs');
+                $depense->deleteQuietly();
+            }
+            $sousCharge->delete();
         }
 
-        if ($compte->budgetPrevisionnels()->count() > 0) {
-            throw new \InvalidArgumentException('Ce compte est lié à des budgets prévisionnels.');
+        $compte->budgetPrevisionnels()->delete();
+
+        foreach ($periodeIds as $periodeId) {
+            Cache::forget("budget_summary_{$periodeId}");
         }
 
         return $this->repository->delete($id);

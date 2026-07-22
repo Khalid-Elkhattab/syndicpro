@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from '@/lib/motion';
 import { Search, Banknote, Building2, CreditCard, FileText, AlertCircle } from 'lucide-react';
 import { useCoproprietaires } from '@/hooks/useCoproprietaires';
 import { useCotisations } from '@/hooks/useCotisations';
@@ -10,7 +10,7 @@ interface EnregistrerPaiementModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: {
-    cotisations_detail_id: number;
+    cotisation_detail_id: number;
     date_paiement: string;
     montant: number;
     mode_paiement: 'especes' | 'virement' | 'cheque' | 'carte';
@@ -65,7 +65,7 @@ export function EnregistrerPaiementModal({
   });
 
   const watchedMontant = watch('montant');
-  const watchedMode = watch('mode_paiement');
+  const watchedMode: string = watch('mode_paiement');
 
   useEffect(() => {
     if (!isOpen) {
@@ -75,7 +75,7 @@ export function EnregistrerPaiementModal({
       setSearchQuery('');
     } else if (preselectedDetailId && cotisationsData) {
       for (const cotisation of cotisationsData) {
-        const details = cotisation.cotisation_details ?? [];
+        const details = cotisation.details ?? [];
         for (const detail of details) {
           if (detail.id === preselectedDetailId) {
             setSelectedCotisationDetail({
@@ -116,12 +116,12 @@ export function EnregistrerPaiementModal({
     }> = [];
 
     cotisationsData.forEach((cotisation) => {
-      if (cotisation.cotisation_details) {
-       cotisation.cotisation_details.forEach((detail) => {
+      if (cotisation.details) {
+        cotisation.details.forEach((detail) => {
           if (detail.coproprietaire_id === selectedCoproprietaires.id && detail.statut !== 'paye') {
             details.push({
               id: detail.id,
-              label: `${cotisation.label} - ${detail.apppartement?.numero ?? ''}`,
+              label: `${cotisation.label} - ${detail.appartement?.numero ?? ''}`,
               montant: detail.montant,
               montant_paye: detail.montant_paye,
               montant_restant: detail.montant_restant,
@@ -146,8 +146,10 @@ export function EnregistrerPaiementModal({
 
   const handleSelectCotisation = (detail: typeof selectedCotisationDetail) => {
     setSelectedCotisationDetail(detail);
-    setValue('montant', detail.montant_restant.toString());
-    setStep('paiement');
+    if (detail) {
+      setValue('montant', detail.montant_restant.toString());
+      setStep('paiement');
+    }
   };
 
   const handleFormSubmit = async (formData: {
@@ -159,7 +161,7 @@ export function EnregistrerPaiementModal({
     if (!selectedCotisationDetail) return;
 
     await onSubmit({
-      cotisations_detail_id: selectedCotisationDetail.id,
+      cotisation_detail_id: selectedCotisationDetail.id,
       date_paiement: formData.date_paiement,
       montant: parseFloat(formData.montant),
       mode_paiement: formData.mode_paiement,

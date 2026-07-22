@@ -1,9 +1,6 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { motion } from 'framer-motion';
-import { AlertCircle } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { useMyAppartements } from '@/hooks/useAppartements';
@@ -11,7 +8,7 @@ import { useUIStore } from '@/store/uiStore';
 import { useCreateReclamation } from '@/hooks/useReclamations';
 
 const reclamationSchema = z.object({
-  appartement_id: z.number({ required_error: 'L\'appartement est obligatoire.' }),
+  appartement_id: z.number({ message: 'L\'appartement est obligatoire.' }),
   titre: z.string().min(1, 'Le titre est obligatoire.').max(200, 'Le titre ne doit pas dépasser 200 caractères.'),
   description: z.string().min(1, 'La description est obligatoire.').max(2000, 'La description ne doit pas dépasser 2000 caractères.'),
   priorite: z.enum(['normale', 'urgente']),
@@ -43,10 +40,7 @@ export function NouvelleReclamationForm({ isOpen, onClose, onSuccess }: Nouvelle
     },
   });
 
-  const selectedAppartementId = watch('appartement_id');
   const description = watch('description') ?? '';
-
-  const selectedAppartement = appartements?.find((a) => a.id === selectedAppartementId);
 
   const onSubmit = (data: ReclamationForm) => {
     createReclamation.mutate(data, {

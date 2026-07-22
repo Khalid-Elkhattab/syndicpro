@@ -26,7 +26,7 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<
   );
 }
 
-export function DepensePieChart({ data, isLoading }: DepensePieChartProps) {
+export default function DepensePieChart({ data, isLoading }: DepensePieChartProps) {
   if (isLoading) {
     return (
       <div className="bg-white rounded-xl shadow-card p-6">

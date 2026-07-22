@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, Calendar, AlertTriangle } from 'lucide-react';
+import { useState, lazy, Suspense } from 'react';
+import { motion } from '@/lib/motion';
+import { Plus, Calendar } from 'lucide-react';
 import { useResidenceStore } from '@/store/residenceStore';
 import { useCotisationsFixes, useCotisationsExceptionnelles, useCreateCotisationFixe, useImpayes } from '@/hooks/useCotisations';
 import { usePeriodes } from '@/hooks/useBudget';
@@ -9,13 +9,16 @@ import { Modal } from '@/components/ui/Modal';
 import { FormField } from '@/components/ui/FormField';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { CotisationExceptionnelleWizard } from '@/components/cotisation/CotisationExceptionnelleWizard';
-import { EnregistrerPaiementModal } from '@/components/paiement/EnregistrerPaiementModal';
 import { useEnregistrerPaiement } from '@/hooks/usePaiements';
+
+const preloadWizard = () => import('@/components/cotisation/CotisationExceptionnelleWizard');
+const preloadPayModal = () => import('@/components/paiement/EnregistrerPaiementModal');
+const CotisationExceptionnelleWizard = lazy(() => preloadWizard().then(m => ({ default: m.CotisationExceptionnelleWizard })));
+const EnregistrerPaiementModal = lazy(() => preloadPayModal().then(m => ({ default: m.EnregistrerPaiementModal })));
 import { formatCurrency } from '@/utils/formatCurrency';
 import { useUIStore } from '@/store/uiStore';
 import { ErrorState } from '@/components/ui/ErrorState';
-import type { Cotisation } from '@/types/entities.types';
+import type { Cotisation, CotisationDetail } from '@/types/entities.types';
 
 type TabId = 'fixes' | 'exceptionnelles' | 'impayes';
 
@@ -176,7 +179,7 @@ export default function CotisationsPage() {
       {activeTab === 'exceptionnelles' && (
         <motion.div key="exc" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <div className="flex justify-end mb-4">
-            <Button onClick={() => setShowWizard(true)}>
+            <Button onClick={() => { preloadWizard(); setShowWizard(true); }}>
               <Plus className="w-4 h-4" /> Nouvelle cotisation exceptionnelle
             </Button>
           </div>
@@ -252,7 +255,7 @@ export default function CotisationsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {impayesData.data.map((d: any, i: number) => {
+                  {impayesData.data.map((d: CotisationDetail, i: number) => {
                     const restant = d.montant - d.montant_paye;
                     return (
                       <motion.tr key={d.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
@@ -274,7 +277,7 @@ export default function CotisationsPage() {
                         </td>
                         <td className="px-4 py-3 text-center">
                           <button
-                            onClick={() => { setPayDetailId(d.id); setPayModalOpen(true); }}
+                            onClick={() => { preloadPayModal(); setPayDetailId(d.id); setPayModalOpen(true); }}
                             className="px-3 py-1 text-xs font-medium text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-lg transition-colors"
                           >
                             Payer
@@ -316,17 +319,27 @@ export default function CotisationsPage() {
       </Modal>
 
       <Modal isOpen={showWizard} onClose={() => setShowWizard(false)} title="Nouvelle cotisation exceptionnelle" size="lg">
-        <CotisationExceptionnelleWizard onClose={() => setShowWizard(false)} residenceId={residenceId} />
+        <Suspense fallback={<div className="p-12 text-center text-text-muted">Chargement...</div>}>
+          <CotisationExceptionnelleWizard onClose={() => setShowWizard(false)} residenceId={residenceId} />
+        </Suspense>
       </Modal>
 
       {payModalOpen && payDetailId && (
-        <EnregistrerPaiementModal
-          isOpen={payModalOpen}
-          onClose={() => { setPayModalOpen(false); setPayDetailId(null); }}
-          onSubmit={handlePayFromImpayes}
-          residenceId={residenceId}
-          preselectedDetailId={payDetailId}
-        />
+        <Suspense fallback={
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div className="bg-white rounded-xl p-6 shadow-xl">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-brand-600 border-t-transparent mx-auto" />
+            </div>
+          </div>
+        }>
+          <EnregistrerPaiementModal
+            isOpen={payModalOpen}
+            onClose={() => { setPayModalOpen(false); setPayDetailId(null); }}
+            onSubmit={handlePayFromImpayes}
+            residenceId={residenceId}
+            preselectedDetailId={payDetailId}
+          />
+        </Suspense>
       )}
     </div>
   );

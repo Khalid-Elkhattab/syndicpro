@@ -1,12 +1,14 @@
-import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useMemo, lazy, Suspense } from 'react';
+import { motion } from '@/lib/motion';
 import { Eye, Filter, X } from 'lucide-react';
 import { useReclamationsResidence } from '@/hooks/useReclamations';
 import { useResidenceStore } from '@/store/residenceStore';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/Button';
-import { ReclamationDetailModal } from '@/components/reclamation/ReclamationDetailModal';
 import { ReclamationBadge, PrioriteBadge } from '@/components/reclamation/ReclamationBadge';
+
+const preloadDetailModal = () => import('@/components/reclamation/ReclamationDetailModal');
+const ReclamationDetailModal = lazy(() => preloadDetailModal().then(m => ({ default: m.ReclamationDetailModal })));
 import { formatDate } from '@/utils/formatDate';
 import { ErrorState } from '@/components/ui/ErrorState';
 
@@ -21,7 +23,7 @@ export default function ReclamationsPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   const { data, isLoading, isError, refetch } = useReclamationsResidence(
-    activeResidence?.id,
+    activeResidence?.id ?? 0,
     filters
   );
 
@@ -209,7 +211,7 @@ export default function ReclamationsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setSelectedReclamationId(reclamation.id)}
+                        onClick={() => { preloadDetailModal(); setSelectedReclamationId(reclamation.id); }}
                         aria-label="Voir les détails"
                       >
                         <Eye className="w-4 h-4" />
@@ -240,11 +242,13 @@ export default function ReclamationsPage() {
         </div>
       )}
 
-      <ReclamationDetailModal
-        isOpen={!!selectedReclamationId}
-        onClose={() => setSelectedReclamationId(null)}
-        reclamationId={selectedReclamationId}
-      />
+      <Suspense fallback={null}>
+        <ReclamationDetailModal
+          isOpen={!!selectedReclamationId}
+          onClose={() => setSelectedReclamationId(null)}
+          reclamationId={selectedReclamationId}
+        />
+      </Suspense>
     </div>
   );
 }

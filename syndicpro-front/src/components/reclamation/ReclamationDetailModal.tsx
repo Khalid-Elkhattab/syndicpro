@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from '@/lib/motion';
 import { X, AlertCircle } from 'lucide-react';
 import { useEffect } from 'react';
 import { formatDate } from '@/utils/formatDate';
@@ -50,7 +50,6 @@ export function ReclamationDetailModal({
   });
 
   const selectedStatut = watch('statut');
-  const isStatutClosed = selectedStatut === 'traite' || selectedStatut === 'rejete';
 
   useEffect(() => {
     if (reclamation) {

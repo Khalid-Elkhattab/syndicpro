@@ -1,5 +1,5 @@
 import { axiosInstance } from '@/api/axiosInstance';
-import type { ApiResponse, PaginatedResponse } from '@/types/api.types';
+import type { ApiResponse } from '@/types/api.types';
 import type { Residence } from '@/types/entities.types';
 
 export const residencesApi = {

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/lib/motion';
 import { FileText, Hourglass, RotateCcw } from 'lucide-react';
 import { useMesPaiements, useRecuUrlMine } from '@/hooks/usePaiements';
 import { formatCurrency } from '@/utils/formatCurrency';

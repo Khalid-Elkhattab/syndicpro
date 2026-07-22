@@ -1,14 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { cotisationApi, type CotisationFilters, type StoreCotisationFixeParams, type StoreCotisationExceptionnelleParams, type MesCotisationsFilters } from '@/api/cotisation.api';
 import type { Cotisation, CotisationDetail } from '@/types/entities.types';
-import type { PaginatedResponse } from '@/types/api.types';
+
 
 export const useCotisations = (residenceId: number, filters?: CotisationFilters) =>
   useQuery({
     queryKey: ['cotisations', residenceId, filters],
     queryFn: async () => {
       const { data } = await cotisationApi.index(residenceId, filters);
-      return data.data as Cotisation[];
+      return (data.data ?? []) as Cotisation[];
     },
     enabled: !!residenceId,
   });
@@ -81,7 +81,7 @@ export const useCotisationDetails = (cotisationId: number | null) =>
     queryKey: ['cotisations', 'details', cotisationId],
     queryFn: async () => {
       const { data } = await cotisationApi.details(cotisationId!);
-      return data.data as CotisationDetail[];
+      return (data.data ?? []) as CotisationDetail[];
     },
     enabled: !!cotisationId,
   });
@@ -91,6 +91,6 @@ export const useMesCotisations = (filters?: MesCotisationsFilters) =>
     queryKey: ['copro', 'cotisations', filters],
     queryFn: async () => {
       const { data } = await cotisationApi.getMine(filters);
-      return data.data as CotisationDetail[];
+      return (data.data ?? []) as CotisationDetail[];
     },
   });

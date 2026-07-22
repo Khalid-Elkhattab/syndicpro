@@ -1,5 +1,3 @@
-import { motion } from 'framer-motion';
-
 interface ReclamationBadgeProps {
   statut: 'nouveau' | 'en_cours' | 'traite' | 'rejete';
   label?: string;
@@ -40,10 +38,12 @@ export function ReclamationBadge({ statut, label, pulse = false }: ReclamationBa
       <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor}`} />
       {displayLabel}
       {pulse && statut === 'nouveau' && (
-        <motion.span
-          className={`absolute inset-0 rounded-full ${config.dotColor} opacity-50`}
-          animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity }}
+        <span
+          className={`absolute inset-0 rounded-full ${config.dotColor}`}
+          style={{
+            opacity: 0.5,
+            animation: 'reclamation-pulse 2s ease-in-out infinite',
+          }}
         />
       )}
     </span>

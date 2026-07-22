@@ -25,8 +25,10 @@ export const useCreateHorsBudget = () => {
       residenceId: number;
       formData: FormData;
     }) => horsBudgetApi.store(residenceId, formData),
-    onSuccess: (_, { residenceId }) =>
-      qc.invalidateQueries({ queryKey: ['horsBudgets', residenceId] }),
+    onSuccess: (_, { residenceId }) => {
+      qc.invalidateQueries({ queryKey: ['horsBudgets', residenceId], exact: false });
+      qc.invalidateQueries({ queryKey: ['budget', 'summary'], exact: false });
+    },
   });
 };
 
@@ -34,26 +36,30 @@ export const useUpdateHorsBudget = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
-      residenceId,
+      residenceId: _residenceId,
       id,
       data,
     }: {
       residenceId: number;
       id: number;
       data: { date?: string; montant?: number; description?: string };
-    }) => horsBudgetApi.update(residenceId, id, data),
-    onSuccess: (_, { residenceId }) =>
-      qc.invalidateQueries({ queryKey: ['horsBudgets', residenceId] }),
+    }) => horsBudgetApi.update(id, data),
+    onSuccess: (_, { residenceId }) => {
+      qc.invalidateQueries({ queryKey: ['horsBudgets', residenceId], exact: false });
+      qc.invalidateQueries({ queryKey: ['budget', 'summary'], exact: false });
+    },
   });
 };
 
 export const useDeleteHorsBudget = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ residenceId, id }: { residenceId: number; id: number }) =>
-      horsBudgetApi.destroy(residenceId, id),
-    onSuccess: (_, { residenceId }) =>
-      qc.invalidateQueries({ queryKey: ['horsBudgets', residenceId] }),
+    mutationFn: ({ residenceId: _residenceId, id }: { residenceId: number; id: number }) =>
+      horsBudgetApi.destroy(id),
+    onSuccess: (_, { residenceId }) => {
+      qc.invalidateQueries({ queryKey: ['horsBudgets', residenceId], exact: false });
+      qc.invalidateQueries({ queryKey: ['budget', 'summary'], exact: false });
+    },
   });
 };
 

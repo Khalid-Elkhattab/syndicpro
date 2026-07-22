@@ -50,7 +50,7 @@ class StoreCotisationExceptionnelleRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
-            if ($this->mode_repartition === 'par_apppartement' && !empty($this->montants_map)) {
+            if ($this->mode_repartition === 'par_appartement' && !empty($this->montants_map)) {
                 $totalMap = array_sum($this->montants_map);
                 if (abs($totalMap - $this->montant_total) > 0.01) {
                     $validator->errors()->add(

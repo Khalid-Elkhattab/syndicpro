@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/lib/motion';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useMesCotisations } from '@/hooks/useCotisations';
 import { formatCurrency } from '@/utils/formatCurrency';

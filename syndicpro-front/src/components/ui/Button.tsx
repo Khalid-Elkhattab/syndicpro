@@ -1,6 +1,6 @@
-import { ButtonHTMLAttributes, forwardRef } from 'react';
+import { forwardRef } from 'react';
+import type { ButtonHTMLAttributes } from 'react';
 import { Loader2 } from 'lucide-react';
-import { motion, useReducedMotion } from 'framer-motion';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -23,15 +23,14 @@ const sizeClasses = {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className = '', variant = 'primary', size = 'md', isLoading, disabled, children, ...props }, ref) => {
-    const shouldReduceMotion = useReducedMotion();
     return (
-      <motion.button
+      <button
         ref={ref}
-        whileTap={shouldReduceMotion ? {} : { scale: 0.97 }}
         className={`
           inline-flex items-center justify-center gap-2 font-medium rounded-lg
-          focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors
-          disabled:opacity-50 disabled:cursor-not-allowed
+          focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-150
+          active:scale-[0.97]
+          disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100
           ${variantClasses[variant]}
           ${sizeClasses[size]}
           ${className}
@@ -41,7 +40,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
         {children}
-      </motion.button>
+      </button>
     );
   }
 );

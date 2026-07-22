@@ -1,5 +1,5 @@
 import { axiosInstance } from './axiosInstance';
-import type { ApiResponse, PaginatedResponse } from '@/types/api.types';
+import type { ApiResponse } from '@/types/api.types';
 
 export interface BudgetSummary {
   prevu_total: number;

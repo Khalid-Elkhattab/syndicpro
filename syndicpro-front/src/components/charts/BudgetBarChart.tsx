@@ -26,7 +26,7 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
   );
 }
 
-export function BudgetBarChart({ data, isLoading }: BudgetBarChartProps) {
+export default function BudgetBarChart({ data, isLoading }: BudgetBarChartProps) {
   if (isLoading) {
     return (
       <div className="bg-white rounded-xl shadow-card p-6">

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { residencesApi } from '@/api/residences.api';
-import type { ApiResponse } from '@/types/api.types';
+
 import type { Residence } from '@/types/entities.types';
 
 export const useResidences = () =>
@@ -8,7 +8,7 @@ export const useResidences = () =>
     queryKey: ['residences'],
     queryFn: async () => {
       const { data } = await residencesApi.index();
-      return data.data as Residence[];
+      return (data.data ?? []) as Residence[];
     },
   });
 
@@ -17,7 +17,7 @@ export const useResidence = (id: number) =>
     queryKey: ['residences', id],
     queryFn: async () => {
       const { data } = await residencesApi.show(id);
-      return data.data as Residence;
+      return (data.data ?? null) as Residence | null;
     },
     enabled: !!id,
   });

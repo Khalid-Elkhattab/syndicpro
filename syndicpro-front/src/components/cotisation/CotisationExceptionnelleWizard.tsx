@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from '@/lib/motion';
 import { Check, ArrowLeft, ArrowRight } from 'lucide-react';
-import { useResidenceStore } from '@/store/residenceStore';
 import { useUIStore } from '@/store/uiStore';
 import { useCreateCotisationExceptionnelle, usePrevisualisation } from '@/hooks/useCotisations';
 import { usePeriodes } from '@/hooks/useBudget';

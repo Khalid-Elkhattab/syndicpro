@@ -36,9 +36,9 @@ class HorsBudgetController extends Controller
         return ApiResponse::created(new HorsBudgetResource($horsBudget), 'Dépense hors budget enregistrée avec succès.');
     }
 
-    public function show(int $residence, int $horsBudget): JsonResponse
+    public function show(int $horsBudget): JsonResponse
     {
-        $model = HorsBudget::where('residence_id', $residence)->find($horsBudget);
+        $model = HorsBudget::find($horsBudget);
 
         if (!$model) {
             return ApiResponse::notFound();
@@ -47,13 +47,13 @@ class HorsBudgetController extends Controller
         return ApiResponse::success(new HorsBudgetResource($model));
     }
 
-    public function update(UpdateHorsBudgetRequest $request, int $residence, int $horsBudget): JsonResponse
+    public function update(UpdateHorsBudgetRequest $request, int $horsBudget): JsonResponse
     {
         $model = $this->service->update($horsBudget, $request->validated());
         return ApiResponse::success(new HorsBudgetResource($model), 'Dépense hors budget mise à jour avec succès.');
     }
 
-    public function destroy(int $residence, int $horsBudget): JsonResponse
+    public function destroy(int $horsBudget): JsonResponse
     {
         $this->service->delete($horsBudget);
         return ApiResponse::success(null, 'Dépense hors budget supprimée avec succès.');

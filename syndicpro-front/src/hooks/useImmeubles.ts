@@ -7,7 +7,7 @@ export const useImmeubles = (residenceId: number) =>
     queryKey: ['immeubles', residenceId],
     queryFn: async () => {
       const { data } = await immeublesApi.indexByResidence(residenceId);
-      return data.data as Immeuble[];
+      return (data.data ?? []) as Immeuble[];
     },
     enabled: !!residenceId,
   });
