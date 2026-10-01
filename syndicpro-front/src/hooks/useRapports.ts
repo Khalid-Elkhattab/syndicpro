@@ -8,7 +8,7 @@ export const useRapportBudget = (residenceId: number, periodeId?: number) =>
       const { data } = await rapportApi.getBudget(residenceId, periodeId);
       return data.data;
     },
-    enabled: !!residenceId,
+    enabled: !!residenceId && !!periodeId,
   });
 
 export const useRapportImpayes = (residenceId: number, filters?: RapportImpayeFilters) =>
@@ -29,7 +29,7 @@ export const useRapportImpayes = (residenceId: number, filters?: RapportImpayeFi
         },
       };
     },
-    enabled: !!residenceId,
+    enabled: !!residenceId && !!filters?.periode_id,
   });
 
 export const useRapportPaiements = (residenceId: number, filters?: RapportPaiementFilters) =>
@@ -50,5 +50,5 @@ export const useRapportPaiements = (residenceId: number, filters?: RapportPaieme
         },
       };
     },
-    enabled: !!residenceId,
+    enabled: !!residenceId && !!filters?.periode_id,
   });

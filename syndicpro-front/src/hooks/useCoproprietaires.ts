@@ -15,6 +15,7 @@ export const useCoproprietaires = (params?: {
       const { data } = await coproprietairesApi.index(params);
       return data;
     },
+    enabled: !!params?.residence_id,
   });
 
 export const useCoproprietaire = (id: number) =>

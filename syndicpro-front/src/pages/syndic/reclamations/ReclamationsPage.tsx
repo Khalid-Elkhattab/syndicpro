@@ -19,12 +19,13 @@ export default function ReclamationsPage() {
     priorite: '',
     search: '',
   });
+  const [page, setPage] = useState(1);
   const [selectedReclamationId, setSelectedReclamationId] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
   const { data, isLoading, isError, refetch } = useReclamationsResidence(
     activeResidence?.id ?? 0,
-    filters
+    { ...filters, page }
   );
 
   const reclamations = data?.data ?? [];
@@ -230,6 +231,7 @@ export default function ReclamationsPage() {
           {Array.from({ length: data.meta.last_page }, (_, i) => (
             <button
               key={i}
+              onClick={() => setPage(i + 1)}
               className={`w-8 h-8 rounded text-sm ${
                 i + 1 === data.meta.current_page
                   ? 'bg-brand-600 text-white'

@@ -27,7 +27,7 @@ export default function PaiementsPage() {
     coproprietaire_id: undefined as number | undefined,
   });
 
-  const { data: coproprietairesData } = useCoproprietaires({ residence_id: activeResidence?.id ?? 0 });
+  const { data: coproprietairesData } = useCoproprietaires(activeResidence?.id ? { residence_id: activeResidence.id } : undefined);
   const { data: paiementsData, isLoading, isError: paiementsError, refetch } = usePaiements(activeResidence?.id ?? 0, { ...filters, page });
   const { data: totalPercu } = useTotalPercu(activeResidence?.id ?? 0);
   const createPaiement = useEnregistrerPaiement();

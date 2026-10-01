@@ -9,6 +9,7 @@ export interface ReclamationFilters {
   date_fin?: string;
   search?: string;
   per_page?: number;
+  page?: number;
 }
 
 export interface StoreReclamationParams {

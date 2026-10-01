@@ -157,8 +157,9 @@ class RapportController extends Controller
             );
 
         $parMode = (clone $aggregatesQuery)
-            ->selectRaw('paiements.mode_paiement, SUM(paiements.montant) as total')
+            ->select(DB::raw('paiements.mode_paiement, SUM(paiements.montant) as total'))
             ->groupBy('paiements.mode_paiement')
+            ->get()
             ->pluck('total', 'mode_paiement')
             ->toArray();
 

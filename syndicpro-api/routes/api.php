@@ -129,6 +129,7 @@ Route::prefix('syndic')
         Route::get('paiements/{paiement}/recu', [PaiementController::class, 'recu'])
             ->name('syndic.paiements.recu');
         Route::get('paiements/{paiement}/download-recu', [PaiementController::class, 'downloadRecu'])
+            ->middleware('signed')
             ->name('syndic.paiements.download-recu');
         Route::get('residences/{residence}/paiements/total-percu', [PaiementController::class, 'totalPercu'])
             ->name('syndic.paiements.total-percu');

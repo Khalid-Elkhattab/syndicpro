@@ -39,10 +39,10 @@ class CotisationService
                 'residence_id' => $residenceId,
                 'periode_id' => $data['periode_id'],
                 'type' => $data['type'],
-                'mode' => $data['mode'],
+                'mode_repartition' => $data['mode_repartition'] ?? $data['mode'] ?? 'egale',
                 'montant_total' => 0,
-                'mois' => $data['mois'],
-                'annee' => $data['annee'],
+                'mois' => $data['mois'] ?? null,
+                'annee' => $data['annee'] ?? null,
                 'description' => $data['description'] ?? null,
             ]);
 
@@ -55,8 +55,8 @@ class CotisationService
 
     private function generateDetails(Cotisation $cotisation, array $data): float
     {
-        $montant = (float) $data['montant'];
-        $mode = $data['mode'];
+        $montant = (float) $data['montant_total'] ?? (float) $data['montant'] ?? 0;
+        $mode = $data['mode_repartition'] ?? $data['mode'] ?? 'egale';
         $appartements = $this->appartementRepo->findActifsByResidence($cotisation->residence_id);
         $totalTantiemes = $appartements->sum('tantieme');
 

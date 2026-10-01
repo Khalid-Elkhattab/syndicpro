@@ -28,7 +28,7 @@ class ReclamationRepository extends BaseRepository
 
         return $query->orderByRaw("CASE WHEN priorite = 'urgente' THEN 0 ELSE 1 END")
             ->orderByDesc('created_at')
-            ->paginate(min($filters['per_page'] ?? 20, 100));
+            ->paginate($filters['per_page'] ?? 20, ['*'], 'page', $filters['page'] ?? 1);
     }
 
     public function findByCoproprietaire(int $coproprietaireId): \Illuminate\Database\Eloquent\Collection

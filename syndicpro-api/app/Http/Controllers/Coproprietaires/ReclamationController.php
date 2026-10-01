@@ -60,7 +60,7 @@ class ReclamationController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => ReclamationResource::make($reclamation->load(['coproprietaires', 'residence', 'appartement'])),
+            'data' => ReclamationResource::make($reclamation->load(['coproprietaire', 'residence', 'appartement'])),
             'message' => 'Réclamation récupérée avec succès.',
         ]);
     }

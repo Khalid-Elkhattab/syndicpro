@@ -16,6 +16,7 @@ class ImmeubleRepository extends BaseRepository
     {
         return $this->model
             ->where('residence_id', $residenceId)
+            ->with(['residence'])
             ->withCount('appartements')
             ->orderBy('nom')
             ->get();

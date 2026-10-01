@@ -139,7 +139,7 @@ export default function CotisationsPage() {
           {fixesLoading ? (
             <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-14 bg-surface-100 rounded-lg animate-pulse" />)}</div>
           ) : !fixes || fixes.length === 0 ? (
-            <EmptyState title="Aucune cotisation fixe" description="Créez votre première cotisation mensuelle." action={{ label: '+ Nouvelle cotisation fixe', onClick: () => setShowFixeModal(true) }} />
+            <EmptyState title="Aucune cotisation fixe" description="Créez votre première cotisation mensuelle." action={{ label: 'Nouvelle cotisation fixe', onClick: () => setShowFixeModal(true) }} />
           ) : (
             <div className="bg-white rounded-xl shadow-card overflow-hidden">
               <table className="w-full">

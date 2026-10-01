@@ -9,6 +9,7 @@ use App\Models\Depense;
 use App\Models\Reclamation;
 use App\Services\BudgetService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -34,9 +35,11 @@ class DashboardController extends Controller
         }
 
         $cotisationsTotal = $periodeId
-            ? Cotisation::where('residence_id', $residenceId)
-                ->where('periode_id', $periodeId)
-                ->sum('montant_total')
+            ? Cache::remember("dashboard_cotisations_{$residenceId}_{$periodeId}", now()->addMinutes(5), fn() =>
+                Cotisation::where('residence_id', $residenceId)
+                    ->where('periode_id', $periodeId)
+                    ->sum('montant_total')
+            )
             : 0;
 
         $impayes = CotisationDetail::join('cotisations', 'cotisation_details.cotisation_id', '=', 'cotisations.id')

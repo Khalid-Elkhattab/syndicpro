@@ -19,7 +19,7 @@ class ReclamationController extends Controller
 
     public function index(Residence $residence, Request $request): JsonResponse
     {
-        $filters = $request->only(['statut', 'priorite', 'date_debut', 'date_fin', 'search']);
+        $filters = $request->only(['statut', 'priorite', 'date_debut', 'date_fin', 'search', 'page']);
         $filters['per_page'] = $request->get('per_page', 20);
 
         $reclamations = $this->reclamationService->getByResidence(

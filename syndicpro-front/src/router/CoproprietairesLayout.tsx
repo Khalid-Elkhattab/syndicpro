@@ -2,16 +2,17 @@ import { Suspense } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { axiosInstance } from '@/api/axiosInstance';
+import { LayoutDashboard, FileText, CreditCard, MessageSquare } from 'lucide-react';
 
 function PageFallback() {
   return <div className="animate-pulse space-y-4 p-2"><div className="h-8 w-48 bg-surface-200 rounded" /><div className="h-4 w-full bg-surface-100 rounded" /><div className="h-4 w-3/4 bg-surface-100 rounded" /><div className="h-20 w-full bg-surface-100 rounded" /></div>;
 }
 
 const navigation = [
-  { name: 'Tableau de bord', href: '/coproprietaires/dashboard', icon: '📊' },
-  { name: 'Mes Cotisations', href: '/coproprietaires/cotisations', icon: '📄' },
-  { name: 'Mes Paiements', href: '/coproprietaires/paiements', icon: '💳' },
-  { name: 'Mes Réclamations', href: '/coproprietaires/reclamations', icon: '📢' },
+  { name: 'Tableau de bord', href: '/coproprietaires/dashboard', icon: LayoutDashboard },
+  { name: 'Mes Cotisations', href: '/coproprietaires/cotisations', icon: FileText },
+  { name: 'Mes Paiements', href: '/coproprietaires/paiements', icon: CreditCard },
+  { name: 'Mes Réclamations', href: '/coproprietaires/reclamations', icon: MessageSquare },
 ];
 
 export default function CoproprietairesLayout() {
@@ -55,13 +56,14 @@ export default function CoproprietairesLayout() {
                 key={item.href}
                 to={item.href}
                 className={({ isActive }) =>
-                  `py-4 border-b-2 font-medium text-sm ${
+                  `py-4 border-b-2 font-medium text-sm flex items-center gap-2 ${
                     isActive
                       ? 'border-brand-600 text-brand-600'
                       : 'border-transparent text-text-muted hover:text-text-secondary'
                   }`
                 }
               >
+                <item.icon className="w-4 h-4" />
                 {item.name}
               </NavLink>
             ))}

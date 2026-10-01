@@ -64,7 +64,7 @@ class ReclamationService
 
     public function getByCoproprietaires(int $coproprietairesId): Collection
     {
-        return $this->reclamationRepository->findByCoproprietaires($coproprietairesId);
+        return $this->reclamationRepository->findByCoproprietaire($coproprietairesId);
     }
 
     public function findById(int $id): ?Reclamation

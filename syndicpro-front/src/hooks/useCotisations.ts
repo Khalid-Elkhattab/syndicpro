@@ -14,10 +14,24 @@ export const useCotisations = (residenceId: number, filters?: CotisationFilters)
   });
 
 export const useCotisationsFixes = (residenceId: number, periodeId?: number) =>
-  useCotisations(residenceId, { type: 'fixe', periode_id: periodeId });
+  useQuery({
+    queryKey: ['cotisations', residenceId, { type: 'fixe', periode_id: periodeId }],
+    queryFn: async () => {
+      const { data } = await cotisationApi.index(residenceId, { type: 'fixe', periode_id: periodeId });
+      return (data.data ?? []) as Cotisation[];
+    },
+    enabled: !!residenceId && !!periodeId,
+  });
 
 export const useCotisationsExceptionnelles = (residenceId: number, periodeId?: number) =>
-  useCotisations(residenceId, { type: 'exceptionnelle', periode_id: periodeId });
+  useQuery({
+    queryKey: ['cotisations', residenceId, { type: 'exceptionnelle', periode_id: periodeId }],
+    queryFn: async () => {
+      const { data } = await cotisationApi.index(residenceId, { type: 'exceptionnelle', periode_id: periodeId });
+      return (data.data ?? []) as Cotisation[];
+    },
+    enabled: !!residenceId && !!periodeId,
+  });
 
 export const useCreateCotisationFixe = () => {
   const qc = useQueryClient();
