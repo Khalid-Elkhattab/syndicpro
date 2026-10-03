@@ -3,7 +3,7 @@
 // Libellés arabes (la locale `fr` utilise les frenchLabel() natifs des enums).
 return [
     'App\Enums\LotType' => [
-        'apartment' => 'شقة', 'duplex' => 'دوبلكس', 'shop' => 'محل تجاري',
+        'apartment' => 'شقة', 'studio' => 'ستوديو', 'duplex' => 'دوبلكس', 'shop' => 'محل تجاري',
         'office' => 'مكتب', 'house' => 'فيلا / منزل',
         'large_surface' => 'مساحة كبيرة', 'other' => 'أخرى',
     ],
@@ -135,7 +135,7 @@ return [
         'nouveau' => 'جديد', 'en_cours' => 'جارٍ', 'traite' => 'معالَج', 'rejete' => 'مرفوض',
     ],
     'App\Enums\ModeRepartition' => [
-        'egale' => 'بالتساوي', 'par_appartement' => 'حسب الشقة', 'par_tantieme' => 'حسب الحصص',
+        'egale' => 'بالتساوي', 'par_appartement' => 'حسب المحل', 'par_tantieme' => 'حسب الحصص',
     ],
     'App\Enums\ModePaiement' => [
         'especes' => 'نقد', 'virement' => 'تحويل', 'cheque' => 'شيك', 'carte' => 'بطاقة',

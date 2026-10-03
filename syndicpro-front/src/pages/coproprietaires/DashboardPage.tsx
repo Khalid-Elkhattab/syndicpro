@@ -206,7 +206,7 @@ export default function DashboardPage() {
         transition={{ delay: 0.25, duration: 0.3 }}
       >
         <h2 className="text-lg font-semibold text-text-primary mb-4">
-          Mes Appartements
+          Mes Lots
         </h2>
         {dashboard?.appartements && dashboard.appartements.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -222,7 +222,7 @@ export default function DashboardPage() {
                   <span className="text-2xl">🚪</span>
                   <div>
                     <p className="font-semibold text-text-primary">
-                      Appartement {appart.numero}
+                      Lot {appart.numero}
                     </p>
                     <p className="text-xs text-text-muted">
                       {appart.etage === 0 ? 'RDC' : `${appart.etage}${appart.etage === 1 ? 'er' : 'ème'} étage`}
@@ -242,7 +242,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="bg-white rounded-xl shadow-card p-8 text-center text-text-muted">
-            Aucun appartement assigné.
+            Aucun lot assigné.
           </div>
         )}
       </motion.section>

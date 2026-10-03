@@ -109,7 +109,7 @@ export default function AppartementsPage() {
   if (isError) {
     return (
       <div className="p-8">
-        <ErrorState message="Impossible de charger les appartements." onRetry={refetch} />
+        <ErrorState message="Impossible de charger les lots." onRetry={refetch} />
       </div>
     );
   }
@@ -159,11 +159,11 @@ export default function AppartementsPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Appartements</h1>
-          <p className="text-sm text-text-muted mt-1">Gérez les appartements de vos immeubles</p>
+          <h1 className="text-2xl font-bold text-text-primary">Lots</h1>
+          <p className="text-sm text-text-muted mt-1">Gérez les lots de vos immeubles (appartements, studios, magasins, bureaux…)</p>
         </div>
         <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700">
-          <Plus className="w-4 h-4" /> Nouvel appartement
+          <Plus className="w-4 h-4" /> Nouveau lot
         </button>
       </div>
 
@@ -178,13 +178,13 @@ export default function AppartementsPage() {
       {isLoading ? (
         <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-12 bg-surface-100 rounded-lg animate-pulse" />)}</div>
       ) : !appartements?.length ? (
-        <EmptyState type="create" title="Aucun appartement" description="Ajoutez un appartement à un immeuble." action={{ label: 'Nouvel appartement', onClick: openCreate }} />
+        <EmptyState type="create" title="Aucun lot" description="Ajoutez un lot à un immeuble." action={{ label: 'Nouveau lot', onClick: openCreate }} />
       ) : (
         <DataTable columns={columns} data={appartements} getRowKey={(row) => row.id} />
       )}
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}
-        title={editing ? 'Modifier l\'appartement' : 'Nouvel appartement'}
+        title={editing ? 'Modifier le lot' : 'Nouveau lot'}
         footer={
           <>
             <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface-100 hover:bg-surface-200 rounded-lg">Annuler</button>
@@ -242,7 +242,7 @@ export default function AppartementsPage() {
       </Modal>
 
       <ConfirmDialog isOpen={isDeleteOpen} onConfirm={handleDelete} onCancel={() => { setIsDeleteOpen(false); setDeleting(null); }}
-        title="Supprimer l'appartement" message={`Supprimer l'appartement ${deleting?.numero} ?`} confirmLabel="Supprimer" isDestructive />
+        title="Supprimer le lot" message={`Supprimer le lot ${deleting?.numero} ?`} confirmLabel="Supprimer" isDestructive />
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from '@/lib/motion';
 import { Plus, Edit2, Trash2, Building2, MapPin, Upload } from 'lucide-react';
 import { useResidences, useCreateResidence, useUpdateResidence, useDeleteResidence } from '@/hooks/useResidences';
+import { useResidenceStore } from '@/store/residenceStore';
+import { ResidenceDetailModal } from '@/components/syndic/ResidenceDetailModal';
 import { Modal } from '@/components/ui/Modal';
 import { FormField } from '@/components/ui/FormField';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -15,6 +17,8 @@ import type { Residence } from '@/types/entities.types';
 
 export default function ResidencesPage() {
   const { data: residences, isLoading, isError, refetch } = useResidences();
+  const { activeResidence } = useResidenceStore();
+  const [detailId, setDetailId] = useState<number | null>(null);
   const createMutation = useCreateResidence();
   const updateMutation = useUpdateResidence();
   const deleteMutation = useDeleteResidence();
@@ -129,7 +133,7 @@ export default function ResidencesPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
               className="bg-white rounded-xl shadow-card p-6 hover:shadow-card-md transition-shadow cursor-pointer group"
-              onClick={() => openEdit(res)}
+              onClick={() => setDetailId(res.id)}
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -164,7 +168,7 @@ export default function ResidencesPage() {
               <p className="text-sm text-text-secondary mb-4">{res.adresse}</p>
               <div className="flex items-center gap-4 text-xs text-text-muted pt-4 border-t border-surface-100">
                 <span>{res.nb_immeubles ?? res.immeubles?.length ?? 0} immeuble{(res.nb_immeubles ?? res.immeubles?.length ?? 0) !== 1 ? 's' : ''}</span>
-                <span>{res.nb_appartements ?? 0} appartement{(res.nb_appartements ?? 0) !== 1 ? 's' : ''}</span>
+                <span>{res.nb_appartements ?? 0} lot{(res.nb_appartements ?? 0) !== 1 ? 's' : ''}</span>
               </div>
             </motion.div>
           ))}
@@ -229,7 +233,7 @@ export default function ResidencesPage() {
         onConfirm={handleDelete}
         onCancel={() => { setIsDeleteOpen(false); setDeleting(null); }}
         title="Supprimer la résidence"
-        message={`Voulez-vous vraiment supprimer "${deleting?.nom}" ? Cette action supprimera également tous les immeubles et appartements associés.`}
+        message={`Voulez-vous vraiment supprimer "${deleting?.nom}" ? Cette action supprimera également tous les immeubles et lots associés.`}
         confirmLabel="Supprimer"
         isDestructive
       />
@@ -238,8 +242,10 @@ export default function ResidencesPage() {
           isOpen={isImportOpen}
           onClose={() => setIsImportOpen(false)}
           residences={residences ?? []}
+          defaultResidenceId={activeResidence?.id ?? null}
         />
       )}
+      <ResidenceDetailModal residenceId={detailId} onClose={() => setDetailId(null)} />
     </div>
   );
 }

@@ -89,7 +89,7 @@ export default function ImmeublesPage() {
       </div>
     )},
     { key: 'residence', label: 'Résidence', render: (row: Immeuble) => row.residence?.nom ?? '—' },
-    { key: 'nb_appartements', label: 'Appartements', render: (row: Immeuble) => row.appartements?.length ?? 0 },
+    { key: 'nb_appartements', label: 'Lots', render: (row: Immeuble) => row.appartements?.length ?? 0 },
     {
       key: 'actions', label: '', width: 'w-20',
       render: (row: Immeuble) => (

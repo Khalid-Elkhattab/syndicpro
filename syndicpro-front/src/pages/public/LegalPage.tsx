@@ -9,8 +9,8 @@ import { SiteHeader, SiteFooter } from '@/components/landing/SiteChrome';
 function NotProvided({ label, value, fallback }: { label: string; value: string | null; fallback: string }) {
   return (
     <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-3">
-      <dt className="w-48 shrink-0 text-sm font-medium text-ink-600">{label}</dt>
-      <dd className="text-sm text-ink-900">{value || <span className="text-ink-400">{fallback}</span>}</dd>
+      <dt className="w-48 shrink-0 text-sm font-medium text-text-secondary">{label}</dt>
+      <dd className="text-sm text-text-primary">{value || <span className="text-text-muted">{fallback}</span>}</dd>
     </div>
   );
 }
@@ -47,29 +47,29 @@ export default function LegalPage({ locale, page }: { locale: LandingLocale; pag
   });
 
   return (
-    <div className="landing landing-scroll bg-sand-50 text-ink-900">
-      <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-reef-700 focus:px-4 focus:py-2 focus:text-white">
+    <div className="landing landing-scroll bg-surface-50 text-text-primary">
+      <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-brand-600 focus:px-4 focus:py-2 focus:text-white">
         {locale === 'ar' ? 'تخطَّ إلى المحتوى' : 'Aller au contenu'}
       </a>
       <SiteHeader t={t} siteName={siteName} links={links} soonLabel={t.common.soon} />
       <main id="contenu" className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        <h1 className="font-display text-3xl font-bold">
+        <h1 className="font-sans text-3xl font-bold">
           {page === 'mentions' ? t.legal.mentionsTitle : t.legal.privacyTitle}
         </h1>
-        <p role="note" className="mt-4 flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm font-medium text-amber-900">
+        <p role="note" className="mt-4 flex items-start gap-2 rounded-xl border border-accent-300 bg-accent-50 p-4 text-sm font-medium text-accent-900">
           <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           {t.legal.draftNotice}
         </p>
 
         {page === 'mentions' ? (
-          <dl className="mt-8 space-y-4 rounded-xl border border-sand-200 bg-white p-6">
+          <dl className="mt-8 space-y-4 rounded-xl border border-surface-200 bg-white p-6">
             <NotProvided label={t.legal.publisher} value={legal.publisher} fallback={t.legal.notProvided} />
             <NotProvided label={t.legal.address} value={legal.address} fallback={t.legal.notProvided} />
             <NotProvided label={t.legal.registration} value={legal.registration} fallback={t.legal.notProvided} />
             <NotProvided label={t.legal.host} value={legal.host} fallback={t.legal.notProvided} />
           </dl>
         ) : (
-          <div className="mt-8 space-y-4 rounded-xl border border-sand-200 bg-white p-6 text-sm leading-relaxed text-ink-600">
+          <div className="mt-8 space-y-4 rounded-xl border border-surface-200 bg-white p-6 text-sm leading-relaxed text-text-secondary">
             <p>{t.legal.privacyIntro}</p>
             <p>{t.legal.privacyCollected}</p>
             <p>{t.legal.privacyWhy}</p>
@@ -78,7 +78,7 @@ export default function LegalPage({ locale, page }: { locale: LandingLocale; pag
         )}
 
         <p className="mt-8">
-          <Link to={locale === 'ar' ? '/ar' : '/'} className="text-sm font-semibold text-reef-700 underline underline-offset-4">
+          <Link to={locale === 'ar' ? '/ar' : '/'} className="text-sm font-semibold text-brand-700 underline underline-offset-4">
             ← {t.common.backHome}
           </Link>
         </p>

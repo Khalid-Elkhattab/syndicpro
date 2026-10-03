@@ -63,18 +63,18 @@ export function SiteHeader({
 
   return (
     <header
-      className={`sticky top-0 z-40 border-b bg-sand-50/90 backdrop-blur transition-shadow ${
-        scrolled ? 'shadow-lift border-reef-100' : 'border-transparent'
+      className={`sticky top-0 z-40 border-b bg-surface-50/90 backdrop-blur transition-shadow ${
+        scrolled ? 'shadow-card border-brand-100' : 'border-transparent'
       }`}
     >
       <nav aria-label="Principal" className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6">
-        <Link to={isAr ? '/ar' : '/'} className="font-display text-xl font-bold text-reef-900" aria-label={siteName}>
+        <Link to={isAr ? '/ar' : '/'} className="font-sans text-xl font-bold text-text-primary" aria-label={siteName}>
           {siteName}
         </Link>
 
         <div className="hidden items-center gap-5 lg:flex">
           {anchors.map((a) => (
-            <a key={a.href} href={a.href} className="text-sm font-medium text-ink-600 hover:text-reef-700">
+            <a key={a.href} href={a.href} className="text-sm font-medium text-text-secondary hover:text-brand-700">
               {a.label}
             </a>
           ))}
@@ -83,7 +83,7 @@ export function SiteHeader({
         <div className="hidden items-center gap-2 lg:flex">
           <Link
             to={switchHref}
-            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-600 hover:bg-reef-50"
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary hover:bg-brand-50"
           >
             <Globe className="h-4 w-4" aria-hidden="true" />
             {isAr ? 'FR' : 'العربية'}
@@ -95,36 +95,36 @@ export function SiteHeader({
               onClick={() => setLoginOpen((v) => !v)}
               aria-expanded={loginOpen}
               aria-haspopup="menu"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-reef-200 px-3 py-2 text-sm font-medium text-reef-800 hover:bg-reef-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-brand-200 px-3 py-2 text-sm font-medium text-brand-700 hover:bg-brand-50"
             >
               {t.header.login}
               <ChevronDown className="h-4 w-4" aria-hidden="true" />
             </button>
             {loginOpen && (
-              <div role="menu" className="absolute end-0 top-full z-50 mt-2 w-64 rounded-xl border border-reef-100 bg-white p-2 shadow-lift">
+              <div role="menu" className="absolute end-0 top-full z-50 mt-2 w-64 rounded-xl border border-brand-100 bg-white p-2 shadow-card">
                 <SafeLink href={links.portal_login} fallback={soonLabel} onClick={() => setLoginOpen(false)}
-                  className="block rounded-lg px-3 py-2 hover:bg-sand-50">
-                  <span role="menuitem" className="block text-sm font-medium text-ink-900">{t.header.loginCopro}</span>
-                  <span className="block text-xs text-ink-400">{t.header.loginCoproHint}</span>
+                  className="block rounded-lg px-3 py-2 hover:bg-surface-50">
+                  <span role="menuitem" className="block text-sm font-medium text-text-primary">{t.header.loginCopro}</span>
+                  <span className="block text-xs text-text-muted">{t.header.loginCoproHint}</span>
                 </SafeLink>
                 <SafeLink href={links.staff_login} fallback={soonLabel} onClick={() => setLoginOpen(false)}
-                  className="mt-1 block rounded-lg px-3 py-2 hover:bg-sand-50">
-                  <span role="menuitem" className="block text-sm font-medium text-ink-900">{t.header.loginStaff}</span>
-                  <span className="block text-xs text-ink-400">{t.header.loginStaffHint}</span>
+                  className="mt-1 block rounded-lg px-3 py-2 hover:bg-surface-50">
+                  <span role="menuitem" className="block text-sm font-medium text-text-primary">{t.header.loginStaff}</span>
+                  <span className="block text-xs text-text-muted">{t.header.loginStaffHint}</span>
                 </SafeLink>
               </div>
             )}
           </div>
 
           <a href={`${base}/#demo`}
-            className="inline-flex min-h-[44px] items-center rounded-lg bg-reef-700 px-4 py-2 text-sm font-semibold text-white hover:bg-reef-800">
+            className="inline-flex min-h-[44px] items-center rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
             {t.header.demo}
           </a>
         </div>
 
         <button
           type="button"
-          className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-ink-900 hover:bg-reef-50 lg:hidden"
+          className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-text-primary hover:bg-brand-50 lg:hidden"
           aria-label={t.header.openMenu}
           aria-expanded={drawer}
           onClick={() => setDrawer(true)}
@@ -134,9 +134,9 @@ export function SiteHeader({
       </nav>
 
       {drawer && (
-        <div ref={drawerRef} className="fixed inset-0 z-50 bg-reef-950 text-white lg:hidden" role="dialog" aria-modal="true" aria-label={siteName}>
+        <div ref={drawerRef} className="fixed inset-0 z-50 bg-brand-950 text-white lg:hidden" role="dialog" aria-modal="true" aria-label={siteName}>
           <div className="flex h-16 items-center justify-between px-4">
-            <span className="font-display text-xl font-bold">{siteName}</span>
+            <span className="font-sans text-xl font-bold">{siteName}</span>
             <button type="button" aria-label={t.header.closeMenu} onClick={() => setDrawer(false)}
               className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg hover:bg-white/10">
               <X className="h-6 w-6" aria-hidden="true" />
@@ -166,7 +166,7 @@ export function SiteHeader({
                 {isAr ? 'Français' : 'العربية'}
               </Link>
               <a href={`${base}/#demo`} onClick={() => setDrawer(false)}
-                className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-lg bg-amber-400 text-base font-bold text-reef-950">
+                className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-lg bg-accent-400 text-base font-bold text-brand-950">
                 {t.header.demo}
               </a>
             </div>
@@ -204,10 +204,10 @@ export function SiteFooter({
 }) {
   void appName;
   return (
-    <footer className="bg-reef-950 text-white">
+    <footer className="bg-brand-950 text-white">
       <div className="mx-auto grid max-w-[1200px] gap-8 px-4 py-12 sm:px-6 md:grid-cols-4">
         <div>
-          <p className="font-display text-xl font-bold">{siteName}</p>
+          <p className="font-sans text-xl font-bold">{siteName}</p>
           <p className="mt-2 max-w-xs text-sm leading-relaxed text-white/70">{t.footer.tagline}</p>
         </div>
         <nav aria-label={t.footer.product}>

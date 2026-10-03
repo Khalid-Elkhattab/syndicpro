@@ -36,7 +36,7 @@ export function RepartitionPreview({
         <table className="w-full">
           <thead>
             <tr className="bg-surface-100 text-left">
-              <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Appartement</th>
+              <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Lot</th>
               <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Copropriétaire</th>
               {mode === 'par_tantieme' && (
                 <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Tantième</th>
@@ -101,7 +101,7 @@ export function RepartitionPreview({
         <div className="mt-4 p-4 bg-surface-50 rounded-lg text-sm text-text-secondary">
           <p className="font-medium text-text-primary mb-1">Formule appliquée :</p>
           <p className="font-mono text-xs">
-            (tantième ÷ total_tantièmes) × montant_total = montant par appartement
+            (tantième ÷ total_tantièmes) × montant_total = montant par lot
           </p>
           {items.slice(0, 1).map((item) => (
             <p key={item.appartement_id} className="font-mono text-xs mt-1 text-text-muted">

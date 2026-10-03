@@ -2,13 +2,6 @@
 
 /* Self-hosted fonts (vendored woff2 in public/fonts — zero third-party requests). */
 @font-face {
-  font-family: "Space Grotesk";
-  font-style: normal;
-  font-display: swap;
-  font-weight: 300 700;
-  src: url("/fonts/space-grotesk-latin-wght-normal.woff2") format("woff2-variations");
-}
-@font-face {
   font-family: "Inter";
   font-style: normal;
   font-display: swap;
@@ -102,32 +95,9 @@
   --font-sans: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", monospace;
 
-  /* ---- Landing page brand tokens (one-file rebrand; app theme untouched) ---- */
-  --color-reef-50: #f0fdfa;
-  --color-reef-100: #ccfbf1;
-  --color-reef-200: #99f6e4;
-  --color-reef-300: #5eead4;
-  --color-reef-400: #2dd4bf;
-  --color-reef-500: #14b8a6;
-  --color-reef-600: #0d9488;
-  --color-reef-700: #0f766e;
-  --color-reef-800: #115e59;
-  --color-reef-900: #134e4a;
-  --color-reef-950: #042f2e;
-
-  --color-sand-50: #faf8f3;
-  --color-sand-100: #f3eee3;
-  --color-sand-200: #e7ddc8;
-
-  --color-ink-900: #12211f;
-  --color-ink-600: #3d4f4c;
-  --color-ink-400: #6f8581;
-
-  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
-  --font-body: "Inter", system-ui, sans-serif;
+  /* ---- Landing page: same theme as the app (brand/surface/text/accent tokens). ---- */
+  /* Arabic face (the app has no Arabic font): used whenever dir=rtl. */
   --font-arabic: "IBM Plex Sans Arabic", "Inter", system-ui, sans-serif;
-
-  --shadow-lift: 0 12px 32px -12px rgb(4 47 46 / 0.25);
 }
 
 /* Scroll container for public pages (app shell locks body scroll). */
@@ -140,19 +110,12 @@
 }
 
 .landing {
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
 }
 
 .landing [id] {
   scroll-margin-top: 5rem;
-}
-
-.landing h1,
-.landing h2,
-.landing h3,
-.landing .font-display {
-  font-family: var(--font-display);
 }
 
 html[dir="rtl"] .landing {
@@ -163,8 +126,7 @@ html[dir="rtl"] .landing {
 
 html[dir="rtl"] .landing h1,
 html[dir="rtl"] .landing h2,
-html[dir="rtl"] .landing h3,
-html[dir="rtl"] .landing .font-display {
+html[dir="rtl"] .landing h3 {
   font-family: var(--font-arabic);
   line-height: 1.8;
 }

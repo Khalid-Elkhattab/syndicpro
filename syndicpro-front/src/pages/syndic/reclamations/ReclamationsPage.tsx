@@ -158,7 +158,7 @@ export default function ReclamationsPage() {
                     Copropriétaire
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
-                    Appartement
+                    Lot
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
                     Titre

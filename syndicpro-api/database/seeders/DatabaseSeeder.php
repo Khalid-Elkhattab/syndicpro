@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('========================================');
         $this->command->info('');
         $this->command->info('Comptes de test créés:');
+        $this->command->info('  - SuperAdmin: superadmin / password');
         $this->command->info('  - Syndic: syndic / password');
         $this->command->info('  - Copropriétaires: fatima.b / password (et 5 autres)');
     }

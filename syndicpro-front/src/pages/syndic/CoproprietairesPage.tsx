@@ -113,7 +113,7 @@ export default function CoproprietairesPage() {
     { key: 'email', label: 'Email' },
     { key: 'phone', label: 'Téléphone', render: (row: User) => row.phone ?? '—' },
     {
-      key: 'nb_appartements', label: 'Appartements',
+      key: 'nb_appartements', label: 'Lots',
       render: (row: User) => <span className="text-text-muted">{(row as unknown as Record<string, unknown>).nb_appartements as number ?? 0}</span>,
     },
     {

@@ -8,12 +8,12 @@ import { Reveal } from './Reveal';
 import { SectionTitle } from './Sections';
 
 const inputCls =
-  'min-h-[44px] w-full rounded-lg border border-surface-300 bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-reef-500 focus:ring-2 focus:ring-reef-100';
-const labelCls = 'mb-1 block text-sm font-medium text-ink-900';
+  'min-h-[44px] w-full rounded-lg border border-surface-300 bg-white px-4 py-2.5 text-sm text-text-primary outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100';
+const labelCls = 'mb-1 block text-sm font-medium text-text-primary';
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
-  return <p className="mt-1 text-xs text-red-600">{message}</p>;
+  return <p className="mt-1 text-xs text-danger">{message}</p>;
 }
 
 function useStartedAt() {
@@ -34,38 +34,38 @@ export function DemoSection({
   void base;
 
   return (
-    <section aria-labelledby="demo" className="bg-sand-50">
+    <section aria-labelledby="demo" className="bg-surface-50">
       <div className="mx-auto max-w-[1200px] px-4 py-16 sm:px-6">
         <SectionTitle id="demo" title={t.demo.title.replace('{app}', '').replace(':app', '').trim()} />
         <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]">
           <Reveal className="space-y-4">
             <ul className="space-y-2">
               {t.demo.bullets.map((b) => (
-                <li key={b} className="flex items-center gap-2 text-sm font-medium text-ink-900">
-                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[11px] font-bold text-white" aria-hidden="true">✓</span>
+                <li key={b} className="flex items-center gap-2 text-sm font-medium text-text-primary">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-success-light0 text-[11px] font-bold text-white" aria-hidden="true">✓</span>
                   {b}
                 </li>
               ))}
             </ul>
-            <div className="rounded-xl border border-sand-200 bg-white p-5">
-              <h3 className="font-display text-base font-bold text-ink-900">{t.demo.contactTitle}</h3>
-              <ul className="mt-2 space-y-1 text-sm text-ink-600">
+            <div className="rounded-xl border border-surface-200 bg-white p-5">
+              <h3 className="font-sans text-base font-bold text-text-primary">{t.demo.contactTitle}</h3>
+              <ul className="mt-2 space-y-1 text-sm text-text-secondary">
                 {contact.email && (
-                  <li><a className="text-reef-700 underline underline-offset-4" href={`mailto:${contact.email}`}>{contact.email}</a></li>
+                  <li><a className="text-brand-700 underline underline-offset-4" href={`mailto:${contact.email}`}>{contact.email}</a></li>
                 )}
                 {contact.phone && (
-                  <li><a className="text-reef-700 underline underline-offset-4" href={`tel:${contact.phone.replace(/\s/g, '')}`}>{contact.phone}</a></li>
+                  <li><a className="text-brand-700 underline underline-offset-4" href={`tel:${contact.phone.replace(/\s/g, '')}`}>{contact.phone}</a></li>
                 )}
                 {contact.whatsapp_number && <li>WhatsApp : {contact.whatsapp_number}</li>}
                 {!contact.email && !contact.phone && !contact.whatsapp_number && (
-                  <li className="text-ink-400">{t.demo.contactTab} ↓</li>
+                  <li className="text-text-muted">{t.demo.contactTab} ↓</li>
                 )}
               </ul>
             </div>
           </Reveal>
 
-          <Reveal className="rounded-xl border border-sand-200 bg-white p-6">
-            <div role="tablist" aria-label={t.demo.title} className="mb-6 flex gap-1 rounded-lg bg-sand-100 p-1">
+          <Reveal className="rounded-xl border border-surface-200 bg-white p-6">
+            <div role="tablist" aria-label={t.demo.title} className="mb-6 flex gap-1 rounded-lg bg-surface-100 p-1">
               {(['demo', 'contact'] as const).map((key) => (
                 <button
                   key={key}
@@ -73,7 +73,7 @@ export function DemoSection({
                   aria-selected={tab === key}
                   onClick={() => setTab(key)}
                   className={`min-h-[44px] flex-1 rounded-md px-4 py-2 text-sm font-semibold ${
-                    tab === key ? 'bg-white text-reef-900 shadow' : 'text-ink-600 hover:text-ink-900'
+                    tab === key ? 'bg-white text-text-primary shadow' : 'text-text-secondary hover:text-text-primary'
                   }`}
                 >
                   {key === 'demo' ? t.demo.demoTab : t.demo.contactTab}
@@ -143,10 +143,10 @@ function DemoForm({ t }: { t: LandingStrings }) {
 
   if (done !== null) {
     return (
-      <div role="status" className="rounded-xl bg-emerald-50 p-6 text-center">
-        <p className="font-display text-lg font-bold text-emerald-800">{t.demo.successTitle}</p>
-        <p className="mt-1 text-sm text-emerald-700">{t.demo.successText}</p>
-        <p className="mt-2 font-mono text-sm font-bold text-emerald-800" dir="ltr">{t.demo.reference} : {done}</p>
+      <div role="status" className="rounded-xl bg-success-light p-6 text-center">
+        <p className="font-sans text-lg font-bold text-success-dark">{t.demo.successTitle}</p>
+        <p className="mt-1 text-sm text-success-dark">{t.demo.successText}</p>
+        <p className="mt-2 font-mono text-sm font-bold text-success-dark" dir="ltr">{t.demo.reference} : {done}</p>
       </div>
     );
   }
@@ -157,7 +157,7 @@ function DemoForm({ t }: { t: LandingStrings }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2" noValidate>
       {serverError && (
-        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700 sm:col-span-2">{serverError}</p>
+        <p role="alert" className="rounded-lg bg-danger-light p-3 text-sm text-danger-dark sm:col-span-2">{serverError}</p>
       )}
       <div>
         <label className={labelCls} htmlFor="demo-name">{t.demo.name} *</label>
@@ -214,8 +214,8 @@ function DemoForm({ t }: { t: LandingStrings }) {
         <textarea id="demo-msg" rows={3} {...register('message')} className={`${inputCls} resize-y`} />
       </div>
       <div className="sm:col-span-2">
-        <label className="flex cursor-pointer items-start gap-2 text-sm text-ink-600">
-          <input type="checkbox" {...register('consent')} className="mt-1 h-4 w-4 shrink-0 accent-teal-700" />
+        <label className="flex cursor-pointer items-start gap-2 text-sm text-text-secondary">
+          <input type="checkbox" {...register('consent')} className="mt-1 h-4 w-4 shrink-0 accent-brand-600" />
           <span>
             {t.demo.consent}{' '}
             <a href={t.locale === 'ar' ? '/ar/confidentialite' : '/confidentialite'} className="underline underline-offset-4">
@@ -228,7 +228,7 @@ function DemoForm({ t }: { t: LandingStrings }) {
       <input type="text" {...register('website')} className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />
       <div className="sm:col-span-2">
         <button type="submit" disabled={isSubmitting}
-          className="inline-flex min-h-[44px] w-full items-center justify-center rounded-lg bg-reef-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-reef-800 disabled:opacity-60 sm:w-auto">
+          className="inline-flex min-h-[44px] w-full items-center justify-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60 sm:w-auto">
           {t.demo.submitDemo}
         </button>
       </div>
@@ -272,10 +272,10 @@ function ContactForm({ t }: { t: LandingStrings }) {
 
   if (done !== null) {
     return (
-      <div role="status" className="rounded-xl bg-emerald-50 p-6 text-center">
-        <p className="font-display text-lg font-bold text-emerald-800">{t.demo.successTitle}</p>
-        <p className="mt-1 text-sm text-emerald-700">{t.demo.successText}</p>
-        <p className="mt-2 font-mono text-sm font-bold text-emerald-800" dir="ltr">{t.demo.reference} : {done}</p>
+      <div role="status" className="rounded-xl bg-success-light p-6 text-center">
+        <p className="font-sans text-lg font-bold text-success-dark">{t.demo.successTitle}</p>
+        <p className="mt-1 text-sm text-success-dark">{t.demo.successText}</p>
+        <p className="mt-2 font-mono text-sm font-bold text-success-dark" dir="ltr">{t.demo.reference} : {done}</p>
       </div>
     );
   }
@@ -283,7 +283,7 @@ function ContactForm({ t }: { t: LandingStrings }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4" noValidate>
       {serverError && (
-        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{serverError}</p>
+        <p role="alert" className="rounded-lg bg-danger-light p-3 text-sm text-danger-dark">{serverError}</p>
       )}
       <div>
         <label className={labelCls} htmlFor="contact-name">{t.demo.name} *</label>
@@ -301,15 +301,15 @@ function ContactForm({ t }: { t: LandingStrings }) {
           <input id="contact-phone" {...register('phone')} dir="ltr" className={inputCls} />
         </div>
       </div>
-      <p className="-mt-2 text-xs text-ink-400">{t.demo.emailOrPhone}</p>
+      <p className="-mt-2 text-xs text-text-muted">{t.demo.emailOrPhone}</p>
       <div>
         <label className={labelCls} htmlFor="contact-msg">{t.demo.message} *</label>
         <textarea id="contact-msg" rows={4} {...register('message')} className={`${inputCls} resize-y`} />
         <FieldError message={errors.message?.message} />
       </div>
       <div>
-        <label className="flex cursor-pointer items-start gap-2 text-sm text-ink-600">
-          <input type="checkbox" {...register('consent')} className="mt-1 h-4 w-4 shrink-0 accent-teal-700" />
+        <label className="flex cursor-pointer items-start gap-2 text-sm text-text-secondary">
+          <input type="checkbox" {...register('consent')} className="mt-1 h-4 w-4 shrink-0 accent-brand-600" />
           <span>
             {t.demo.consent}{' '}
             <a href={t.locale === 'ar' ? '/ar/confidentialite' : '/confidentialite'} className="underline underline-offset-4">
@@ -322,7 +322,7 @@ function ContactForm({ t }: { t: LandingStrings }) {
       <input type="text" {...register('website')} className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />
       <div>
         <button type="submit" disabled={isSubmitting}
-          className="inline-flex min-h-[44px] w-full items-center justify-center rounded-lg bg-reef-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-reef-800 disabled:opacity-60 sm:w-auto">
+          className="inline-flex min-h-[44px] w-full items-center justify-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60 sm:w-auto">
           {t.demo.submitContact}
         </button>
       </div>
@@ -332,14 +332,14 @@ function ContactForm({ t }: { t: LandingStrings }) {
 
 export function FinalCta({ t, base }: { t: LandingStrings; base: string }) {
   return (
-    <section aria-labelledby="fin" className="bg-reef-950 text-white">
+    <section aria-labelledby="fin" className="bg-brand-950 text-white">
       <Reveal className="mx-auto max-w-[1200px] px-4 py-14 text-center sm:px-6">
-        <h2 id="fin" className="font-display text-3xl font-bold sm:text-4xl" tabIndex={-1}>
+        <h2 id="fin" className="font-sans text-3xl font-bold sm:text-4xl" tabIndex={-1}>
           {t.final.title}
         </h2>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <a href={`${base}/#demo`}
-            className="inline-flex min-h-[44px] items-center rounded-lg bg-amber-400 px-6 py-2.5 text-sm font-bold text-reef-950 hover:bg-amber-300">
+            className="inline-flex min-h-[44px] items-center rounded-lg bg-accent-400 px-6 py-2.5 text-sm font-bold text-brand-950 hover:bg-accent-300">
             {t.final.demo}
           </a>
           <a href={`${base}/#espace`}

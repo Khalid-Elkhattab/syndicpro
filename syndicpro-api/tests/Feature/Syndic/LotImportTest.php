@@ -110,3 +110,31 @@ it('reimport updates instead of duplicating and rejects invalid file atomically'
     $bad->assertStatus(422);
     expect(Lot::count())->toBe(1);
 });
+
+it('residence index and detail reflect committed import (regression)', function () {
+    $syndic = syndicWith();
+    $residence = residenceFor($syndic);
+
+    $file = lotsCsv([
+        ['B', 'A12', 'appartement', '85.5', '120', '', 'yes', 'P1|P2', 'no', '', '2', ''],
+        ['B', 'M3', 'magasin', '42', '60', '', 'no', '', 'no', '', '0', ''],
+    ]);
+
+    $this->actingAs($syndic)->postJson(
+        "/api/syndic/residences/{$residence->id}/lots/import/commit",
+        ['file' => $file]
+    )->assertStatus(201);
+
+    // Liste : compteurs à jour (ce qu'affiche la carte résidence).
+    $index = $this->actingAs($syndic)->getJson('/api/syndic/residences')->assertStatus(200);
+    $item = collect($index->json('data'))->firstWhere('id', $residence->id);
+    expect((int) $item['nb_immeubles'])->toBe(1);
+    expect((int) $item['nb_appartements'])->toBe(2);
+
+    // Détail : immeubles avec leurs lots (ce qu'affiche la modale détail).
+    $show = $this->actingAs($syndic)->getJson("/api/syndic/residences/{$residence->id}")->assertStatus(200);
+    $immeubles = $show->json('data.immeubles');
+    expect($immeubles)->toHaveCount(1);
+    expect($immeubles[0]['nom'])->toBe('B');
+    expect($immeubles[0]['appartements'])->toHaveCount(2);
+});

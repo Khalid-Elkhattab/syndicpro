@@ -36,7 +36,7 @@ it('resolves arabic labels when locale is ar', function () {
 it('offers value+label options for frontend selects', function () {
     $options = LotType::options();
 
-    expect($options)->toHaveCount(7)
+    expect($options)->toHaveCount(8)
         ->and($options[0])->toHaveKeys(['value', 'label']);
 });
 
@@ -49,6 +49,8 @@ it('flags cheque and effet as requiring a document number', function () {
 it('parses french lot type aliases from csv input', function () {
     expect(LotType::fromInput('magasin'))->toBe(LotType::Shop)
         ->and(LotType::fromInput('Appartement'))->toBe(LotType::Apartment)
+        ->and(LotType::fromInput('studio'))->toBe(LotType::Studio)
+        ->and(LotType::Studio->label())->toBe('Studio')
         ->and(LotType::fromInput('bureau'))->toBe(LotType::Office)
         ->and(LotType::fromInput('villa'))->toBe(LotType::House)
         ->and(LotType::fromInput('nonsense'))->toBeNull();

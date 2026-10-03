@@ -14,7 +14,7 @@ enum ModeRepartition: string
     {
         return match ($this) {
             self::Egale => 'Égale',
-            self::ParAppartement => 'Par appartement',
+            self::ParAppartement => 'Par lot',
             self::ParTantieme => 'Par tantième',
         };
     }

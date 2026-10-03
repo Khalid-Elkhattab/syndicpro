@@ -209,7 +209,7 @@ export default function CotisationsPage() {
                       <td className="px-4 py-3 text-sm text-text-secondary">
                         {c.mode_repartition === 'egale' ? 'Répartition égale'
                           : c.mode_repartition === 'par_tantieme' ? 'Par tantième'
-                          : c.mode_repartition === 'par_appartement' ? 'Par appartement'
+                          : c.mode_repartition === 'par_appartement' ? 'Par lot'
                           : '—'}
                       </td>
                       <td className="px-4 py-3 text-sm text-text-secondary">{c.periode?.annee ?? '—'}</td>
@@ -246,7 +246,7 @@ export default function CotisationsPage() {
                 <thead>
                   <tr className="bg-surface-100 text-left">
                     <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Copropriétaire</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Appartement</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Lot</th>
                     <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider text-right">Dû</th>
                     <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider text-right">Payé</th>
                     <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider text-right">Restant</th>

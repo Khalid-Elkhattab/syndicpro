@@ -28,7 +28,7 @@ function MobileDemoBar({ label, base }: { label: string; base: string }) {
   return (
     <a
       href={`${base}/#demo`}
-      className="fixed inset-x-3 bottom-3 z-40 flex min-h-[48px] items-center justify-center rounded-xl bg-reef-700 text-sm font-bold text-white shadow-lift sm:hidden"
+      className="fixed inset-x-3 bottom-3 z-40 flex min-h-[48px] items-center justify-center rounded-xl bg-brand-600 text-sm font-bold text-white shadow-card sm:hidden"
     >
       {label}
     </a>
@@ -96,8 +96,8 @@ export default function LandingPage({ locale }: { locale: LandingLocale }) {
   });
 
   return (
-    <div className="landing landing-scroll bg-sand-50 text-ink-900">
-      <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-reef-700 focus:px-4 focus:py-2 focus:text-white">
+    <div className="landing landing-scroll bg-surface-50 text-text-primary">
+      <a href="#contenu" className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-brand-600 focus:px-4 focus:py-2 focus:text-white">
         {locale === 'ar' ? 'تخطَّ إلى المحتوى' : 'Aller au contenu'}
       </a>
       <SiteHeader t={t} siteName={siteName} links={links} soonLabel={t.common.soon} />

@@ -11,6 +11,7 @@ enum LotType: string
     use HasLabel;
 
     case Apartment = 'apartment';
+    case Studio = 'studio';
     case Duplex = 'duplex';
     case Shop = 'shop';
     case Office = 'office';
@@ -23,6 +24,7 @@ enum LotType: string
     {
         return match ($this) {
             self::Apartment => 'Appartement',
+            self::Studio => 'Studio',
             self::Duplex => 'Duplex',
             self::Shop => 'Magasin / Commerce',
             self::Office => 'Bureau',
@@ -49,6 +51,7 @@ enum LotType: string
         $map = [
             'apartment' => self::Apartment, 'apartement' => self::Apartment,
             'appartement' => self::Apartment, 'appart' => self::Apartment, 'apt' => self::Apartment,
+            'studio' => self::Studio, 'studette' => self::Studio,
             'duplex' => self::Duplex,
             'shop' => self::Shop, 'magasin' => self::Shop, 'commerce' => self::Shop,
             'local_commercial' => self::Shop, 'local' => self::Shop,

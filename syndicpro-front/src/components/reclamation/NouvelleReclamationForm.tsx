@@ -8,7 +8,7 @@ import { useUIStore } from '@/store/uiStore';
 import { useCreateReclamation } from '@/hooks/useReclamations';
 
 const reclamationSchema = z.object({
-  appartement_id: z.number({ message: 'L\'appartement est obligatoire.' }),
+  appartement_id: z.number({ message: 'Le lot est obligatoire.' }),
   titre: z.string().min(1, 'Le titre est obligatoire.').max(200, 'Le titre ne doit pas dépasser 200 caractères.'),
   description: z.string().min(1, 'La description est obligatoire.').max(2000, 'La description ne doit pas dépasser 2000 caractères.'),
   priorite: z.enum(['normale', 'urgente']),
@@ -85,7 +85,7 @@ export function NouvelleReclamationForm({ isOpen, onClose, onSuccess }: Nouvelle
       <form id="reclamation-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-text-secondary mb-1">
-            Appartement <span className="text-danger">*</span>
+              Lot <span className="text-danger">*</span>
           </label>
           {appartements && appartements.length === 1 ? (
             <div className="px-3 py-2 bg-surface-50 border border-surface-200 rounded-lg text-sm">
@@ -104,7 +104,7 @@ export function NouvelleReclamationForm({ isOpen, onClose, onSuccess }: Nouvelle
               {...register('appartement_id', { valueAsNumber: true })}
               className="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
             >
-              <option value="">Sélectionnez un appartement</option>
+              <option value="">Sélectionnez un lot</option>
               {appartements?.map((appart) => (
                 <option key={appart.id} value={appart.id}>
                   {appart.numero}

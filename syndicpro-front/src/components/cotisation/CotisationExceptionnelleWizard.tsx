@@ -16,8 +16,8 @@ interface WizardProps {
 }
 
 const MODES = [
-  { value: 'egale', label: 'Répartition Égale', description: 'Même montant pour tous les appartements', icon: '⚖️' },
-  { value: 'par_appartement', label: 'Par Appartement', description: 'Définir manuellement par appartement', icon: '📋' },
+  { value: 'egale', label: 'Répartition Égale', description: 'Même montant pour tous les lots', icon: '⚖️' },
+  { value: 'par_appartement', label: 'Par Lot', description: 'Définir manuellement par lot', icon: '📋' },
   { value: 'par_tantieme', label: 'Par Tantième', description: 'Proportionnel aux tantièmes', icon: '📐' },
 ] as const;
 
@@ -229,7 +229,7 @@ export function CotisationExceptionnelleWizard({ onClose, residenceId }: WizardP
                     <p className="font-medium text-text-primary">{MODES.find((m) => m.value === mode)?.label}</p>
                   </div>
                   <div className="p-4 bg-surface-50 rounded-lg">
-                    <p className="text-xs text-text-muted mb-1">Appartements concernés</p>
+                    <p className="text-xs text-text-muted mb-1">Lots concernés</p>
                     <p className="font-medium text-text-primary">{previsData?.length ?? 0}</p>
                   </div>
                 </div>

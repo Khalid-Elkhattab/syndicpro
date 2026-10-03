@@ -6,13 +6,13 @@ import type { GridTile } from './buildingGridData';
 export type { GridTile };
 
 const FILL: Record<TileStatus, string> = {
-  sold: 'fill-emerald-500',
-  paid: 'fill-emerald-500',
-  unsold: 'fill-amber-400',
-  pending: 'fill-sky-300',
-  overdue: 'fill-red-500',
-  info: 'fill-sky-500',
-  neutral: 'fill-reef-100',
+  sold: 'fill-success',
+  paid: 'fill-success',
+  unsold: 'fill-accent-400',
+  pending: 'fill-info',
+  overdue: 'fill-danger',
+  info: 'fill-info',
+  neutral: 'fill-brand-100',
 };
 
 const PATTERN: Record<TileStatus, string> = {

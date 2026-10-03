@@ -10,7 +10,7 @@ function FaqList({ items }: { items: FaqItem[] }) {
       {items.map((item, i) => {
         const isOpen = open === i;
         return (
-          <div key={item.q} className="overflow-hidden rounded-xl border border-sand-200 bg-white">
+          <div key={item.q} className="overflow-hidden rounded-xl border border-surface-200 bg-white">
             <button
               type="button"
               onClick={() => setOpen(isOpen ? null : i)}
@@ -18,13 +18,13 @@ function FaqList({ items }: { items: FaqItem[] }) {
               aria-controls={`faq-panel-${i}`}
               className="flex min-h-[44px] w-full items-center justify-between gap-3 px-4 py-3 text-start"
             >
-              <span className="text-sm font-semibold text-ink-900">{item.q}</span>
-              <span aria-hidden="true" className={`shrink-0 font-display text-lg text-reef-700 transition-transform ${isOpen ? 'rotate-45' : ''}`}>
+              <span className="text-sm font-semibold text-text-primary">{item.q}</span>
+              <span aria-hidden="true" className={`shrink-0 font-sans text-lg text-brand-700 transition-transform ${isOpen ? 'rotate-45' : ''}`}>
                 +
               </span>
             </button>
             {isOpen && (
-              <p id={`faq-panel-${i}`} className="px-4 pb-4 text-sm leading-relaxed text-ink-600">
+              <p id={`faq-panel-${i}`} className="px-4 pb-4 text-sm leading-relaxed text-text-secondary">
                 {item.a}
               </p>
             )}
@@ -43,7 +43,7 @@ export function FaqSection({ t, appName }: { t: LandingStrings; appName: string 
     <section aria-labelledby="faq" className="bg-white">
       <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
         <SectionTitle id="faq" title={t.faq.title} />
-        <div role="tablist" aria-label={t.faq.title} className="mx-auto mb-6 flex w-fit gap-1 rounded-lg bg-sand-100 p-1">
+        <div role="tablist" aria-label={t.faq.title} className="mx-auto mb-6 flex w-fit gap-1 rounded-lg bg-surface-100 p-1">
           {(['managers', 'owners'] as const).map((key) => (
             <button
               key={key}
@@ -51,7 +51,7 @@ export function FaqSection({ t, appName }: { t: LandingStrings; appName: string 
               aria-selected={tab === key}
               onClick={() => setTab(key)}
               className={`min-h-[44px] rounded-md px-5 py-2 text-sm font-semibold ${
-                tab === key ? 'bg-white text-reef-900 shadow' : 'text-ink-600 hover:text-ink-900'
+                tab === key ? 'bg-white text-text-primary shadow' : 'text-text-secondary hover:text-text-primary'
               }`}
             >
               {key === 'managers' ? t.faq.managersTab : t.faq.ownersTab}

@@ -220,7 +220,7 @@ function RecentImpayesCard({ impayes, navigate }: { impayes: Array<{ id: number;
             >
               <div className="min-w-0 flex-1">
                 <p className="text-text-primary truncate">{d.coproprietaire?.name ?? '—'}</p>
-                <p className="text-text-muted text-xs">Appt. {d.appartement?.numero ?? '—'}</p>
+                <p className="text-text-muted text-xs">Lot {d.appartement?.numero ?? '—'}</p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                 <span className="font-mono font-semibold text-danger-dark text-sm">
@@ -293,7 +293,7 @@ function RecentReclamationsCard({ reclamations, navigate }: { reclamations: Arra
               </div>
               <p className="text-sm font-medium text-text-primary truncate">{r.titre}</p>
               <p className="text-xs text-text-muted mt-1">
-                {r.coproprietaire?.name ?? '—'} · Appt. {r.appartement?.numero ?? '—'}
+                {r.coproprietaire?.name ?? '—'} · Lot {r.appartement?.numero ?? '—'}
               </p>
             </div>
           ))}

@@ -153,7 +153,7 @@ export default function RapportsPage() {
     if (!impayesData?.data) return;
     const rows = impayesData.data.map((d: CotisationDetail) => ({
       'Copropriétaire': d.coproprietaire?.name ?? '—',
-      'Appartement': d.appartement?.numero ?? '—',
+      'Lot': d.appartement?.numero ?? '—',
       'Montant dû (DH)': d.montant.toFixed(2),
       'Payé (DH)': d.montant_paye.toFixed(2),
       'Restant (DH)': (d.montant - d.montant_paye).toFixed(2),

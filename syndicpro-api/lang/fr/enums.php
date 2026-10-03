@@ -5,6 +5,7 @@ use App\Enums\LotType;
 return [
     LotType::class => [
         'apartment' => 'Appartement',
+        'studio' => 'Studio',
         'duplex' => 'Duplex',
         'shop' => 'Magasin / Commerce',
         'office' => 'Bureau',

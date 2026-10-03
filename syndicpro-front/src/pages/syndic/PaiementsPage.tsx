@@ -69,7 +69,7 @@ export default function PaiementsPage() {
     },
     {
       key: 'appartement',
-      label: 'Appartement',
+      label: 'Lot',
       render: (row) => {
         const detail = row.cotisation_detail;
         const appartement = detail?.appartement;

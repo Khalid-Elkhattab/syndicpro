@@ -29,7 +29,7 @@ const impayeColumns = [
   },
   {
     key: 'appartement',
-    label: 'Appartement',
+    label: 'Lot',
     render: (row: CotisationDetail) => row.appartement?.numero ?? '—',
   },
   {

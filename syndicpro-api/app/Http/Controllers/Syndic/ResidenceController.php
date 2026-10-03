@@ -34,7 +34,15 @@ class ResidenceController extends Controller
     {
         $residence = Residence::where('id', $id)
             ->where('syndic_id', auth()->id())
-            ->with(['immeubles', 'periodes' => fn($q) => $q->where('is_active', true)->limit(1)])
+            ->with([
+                'immeubles.appartements' => fn($q) => $q->orderBy('numero'),
+                'immeubles' => fn($q) => $q->orderBy('nom'),
+                'periodes' => fn($q) => $q->where('is_active', true)->limit(1),
+            ])
+            ->withCount([
+                'immeubles',
+                'appartements' => fn($q) => $q->whereNull('appartements.deleted_at'),
+            ])
             ->first();
 
         if (!$residence) {

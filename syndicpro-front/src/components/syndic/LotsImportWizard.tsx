@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Upload, FileCheck, TriangleAlert, CircleCheck, Download } from 'lucide-react';
+import { Upload, FileCheck, TriangleAlert, CircleCheck, Download, Eye } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
+import { useResidenceStore } from '@/store/residenceStore';
 import { lotsImportApi, type LotsImportPreview, type LotsImportResult } from '@/api/lotsImport.api';
 import type { Residence } from '@/types/entities.types';
 
@@ -14,11 +15,14 @@ interface Props {
 
 /**
  * Assistant d'import CSV : résidence → fichier → prévisualisation (dry-run) → import.
- * Tous les types de lots acceptés : appartement, duplex, magasin, bureau, villa, grande surface, autre.
+ * Tous les types de lots acceptés : appartement, studio, duplex, magasin, bureau, villa, grande surface, autre.
  */
 export function LotsImportWizard({ isOpen, onClose, residences, defaultResidenceId }: Props) {
   const qc = useQueryClient();
-  const [residenceId, setResidenceId] = useState<number | null>(defaultResidenceId ?? residences[0]?.id ?? null);
+  const { activeResidence, setActiveResidence } = useResidenceStore();
+  const [residenceId, setResidenceId] = useState<number | null>(
+    defaultResidenceId ?? activeResidence?.id ?? residences[0]?.id ?? null
+  );
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<LotsImportPreview | null>(null);
   const [result, setResult] = useState<LotsImportResult | null>(null);
@@ -47,6 +51,18 @@ export function LotsImportWizard({ isOpen, onClose, residences, defaultResidence
     } finally {
       setLoading(false);
     }
+  };
+
+  const targetResidence = residences.find((r) => r.id === residenceId) ?? null;
+
+  const handleViewResidence = () => {
+    if (targetResidence) {
+      // Aligne le sélecteur latéral sur la résidence importée : toutes les
+      // pages (Immeubles, Lots, ...) afficheront ces données.
+      setActiveResidence(targetResidence);
+    }
+    reset();
+    onClose();
   };
 
   const handleCommit = async () => {
@@ -94,12 +110,21 @@ export function LotsImportWizard({ isOpen, onClose, residences, defaultResidence
             Modèle CSV
           </button>
           {result ? (
-            <button
-              onClick={() => { reset(); onClose(); }}
-              className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors"
-            >
-              Fermer
-            </button>
+            <>
+              <button
+                onClick={() => { reset(); onClose(); }}
+                className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface-100 hover:bg-surface-200 rounded-lg transition-colors"
+              >
+                Fermer
+              </button>
+              <button
+                onClick={handleViewResidence}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors"
+              >
+                <Eye className="w-4 h-4" />
+                Voir la résidence
+              </button>
+            </>
           ) : preview && !preview.errors.length ? (
             <button
               onClick={handleCommit}
@@ -149,7 +174,7 @@ export function LotsImportWizard({ isOpen, onClose, residences, defaultResidence
             />
           </label>
           <p className="text-xs text-text-muted mt-1">
-            Colonnes : building, lot_number, type (appartement, duplex, magasin, bureau, villa, grande surface, autre + alias FR), surface, tantieme, land_title_no, parking, parking_numbers (P1|P2), box, box_numbers, floor, notes.
+            Colonnes : building, lot_number, type (appartement, studio, duplex, magasin, bureau, villa, grande surface, autre + alias FR), surface, tantieme, land_title_no, parking, parking_numbers (P1|P2), box, box_numbers, floor, notes.
           </p>
         </div>
 
@@ -232,6 +257,9 @@ export function LotsImportWizard({ isOpen, onClose, residences, defaultResidence
           <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
             <div className="flex items-center gap-2 text-sm font-medium text-emerald-700 mb-1">
               <CircleCheck className="w-4 h-4" /> Import terminé
+              {targetResidence && (
+                <span className="font-normal">— {targetResidence.nom} ({targetResidence.ville})</span>
+              )}
             </div>
             <p className="text-sm text-emerald-700">
               {result.created_buildings} bâtiment{result.created_buildings !== 1 ? 's' : ''} créé{result.created_buildings !== 1 ? 's' : ''}, {result.created_lots} lot{result.created_lots !== 1 ? 's' : ''} créé{result.created_lots !== 1 ? 's' : ''}, {result.updated_lots} mis à jour.

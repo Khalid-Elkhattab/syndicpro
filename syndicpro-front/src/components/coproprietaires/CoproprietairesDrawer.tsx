@@ -25,7 +25,7 @@ export function CoproprietairesDrawer({ user, onClose, onEdit, onResetPassword }
   const displayUser = enrichedUser ?? user;
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'appartements', label: 'Appartements' },
+    { key: 'appartements', label: 'Lots' },
     { key: 'cotisations', label: 'Cotisations' },
     { key: 'paiements', label: 'Paiements' },
     { key: 'reclamations', label: 'Réclamations' },
@@ -77,7 +77,7 @@ export function CoproprietairesDrawer({ user, onClose, onEdit, onResetPassword }
               <StatusBadge isActive={displayUser.is_active} />
               {'nb_appartements' in displayUser && (
                 <span className="text-xs text-text-muted">
-                  {(displayUser as User & { nb_appartements?: number }).nb_appartements ?? 0} apt.
+                  {(displayUser as User & { nb_appartements?: number }).nb_appartements ?? 0} lot(s).
                 </span>
               )}
             </div>
@@ -170,7 +170,7 @@ function TabContent({ tab, user }: { tab: Tab; user: User }) {
         immeuble?: { nom: string };
       }> | undefined;
       if (!appartements?.length) {
-        return <EmptyState title="Aucun appartement" description="Aucun appartement associé." />;
+        return <EmptyState title="Aucun lot" description="Aucun lot associé." />;
       }
       return (
         <div className="space-y-3">
@@ -208,7 +208,7 @@ function TabContent({ tab, user }: { tab: Tab; user: User }) {
             <div key={detail.id} className="p-3 bg-surface-50 rounded-lg border border-surface-200">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-text-primary">
-                  {detail.appartement?.numero ?? 'Apt #' + detail.id}
+                  {detail.appartement?.numero ?? 'Lot #' + detail.id}
                 </span>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${
                   detail.statut === 'paye' ? 'bg-success/10 text-success' :

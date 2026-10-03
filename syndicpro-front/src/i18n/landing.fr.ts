@@ -275,7 +275,7 @@ export const fr: LandingStrings = {
     title: 'Tout ce qu’un syndic fait au quotidien',
     sub: 'Douze modules qui travaillent sur les mêmes données.',
     items: [
-      { title: 'Résidences et locaux', text: 'Immeubles, appartements, duplex, magasins, bureaux, tantièmes ; import CSV avec aperçu avant validation.' },
+      { title: 'Résidences et locaux', text: 'Immeubles, appartements, studios, duplex, magasins, bureaux, tantièmes ; import CSV avec aperçu avant validation.' },
       { title: 'Cotisations et appels de fonds', text: 'Calcul fixe ou par tantième, au prorata des jours, avec arrondis exacts.' },
       { title: 'Règlements et reçus', text: 'Chèque, virement, versement, espèces ; un règlement peut solder plusieurs périodes ; reçu numéroté avec QR.' },
       { title: 'Budgets et dépenses', text: 'Budget prévisionnel, hors budget, fonctionnement ou investissement ; comparé prévu / réalisé et alertes de dépassement.' },

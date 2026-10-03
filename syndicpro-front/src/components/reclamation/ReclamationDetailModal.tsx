@@ -155,7 +155,7 @@ export function ReclamationDetailModal({
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <span className="text-text-muted">Appartement :</span>
+                      <span className="text-text-muted">Lot :</span>
                       <span className="font-medium text-text-primary">
                         {reclamation.appartement?.numero ?? '—'}
                       </span>
