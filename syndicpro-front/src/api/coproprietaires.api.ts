@@ -20,10 +20,13 @@ export const coproprietairesApi = {
     email: string;
     phone?: string;
     username: string;
-    password: string;
-    password_confirmation: string;
+    password?: string;
+    password_confirmation?: string;
   }) =>
     axiosInstance.post<ApiResponse<User>>('/api/syndic/coproprietaires', data),
+
+  activate: (token: string, data: { password: string; password_confirmation: string }) =>
+    axiosInstance.post<ApiResponse<null>>(`/api/auth/activate/${token}`, data),
 
   update: (id: number, data: {
     name?: string;

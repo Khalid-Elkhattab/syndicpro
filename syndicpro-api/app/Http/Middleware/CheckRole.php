@@ -10,18 +10,28 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckRole
 {
-    public function handle(Request $request, Closure $next, string $role): Response
+    /**
+     * Rôles acceptés séparés par des virgules, ex. `role:syndic,assistant`.
+     * Les logins copropriétaires (type=owner) n’accèdent qu’aux routes `coproprietaire`.
+     */
+    public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         $user = $request->user();
 
         if (!$user) {
-            return ApiResponse::forbidden('Accès non autorisé. Rôle requis : ' . $role);
+            return ApiResponse::forbidden('Accès non autorisé.');
         }
 
-        $userRole = $user->role instanceof UserRole ? $user->role->value : $user->role;
+        $userRole = $user->role instanceof UserRole ? $user->role->value : (string) $user->role;
+        $allowed = array_map('trim', $roles);
 
-        if ($userRole !== $role) {
-            return ApiResponse::forbidden('Accès non autorisé. Rôle requis : ' . $role);
+        if (! in_array($userRole, $allowed, true)) {
+            return ApiResponse::forbidden('Accès non autorisé. Rôle requis : ' . implode(',', $allowed));
+        }
+
+        $isOwnerLogin = method_exists($user, 'isOwner') && $user->isOwner();
+        if ($isOwnerLogin && ! in_array(UserRole::Coproprietaire->value, $allowed, true)) {
+            return ApiResponse::forbidden('Espace réservé au staff.');
         }
 
         return $next($request);

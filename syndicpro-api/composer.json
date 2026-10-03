@@ -10,6 +10,7 @@
         "laravel/framework": "^13.7",
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^3.0",
+        "spatie/laravel-activitylog": "^4.12",
         "spatie/laravel-medialibrary": "^11.22",
         "spatie/laravel-permission": "^7.4"
     },
@@ -28,7 +29,18 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "classmap": [
+            "app/Enums/AccountEnums.php",
+            "app/Enums/OwnershipEnums.php",
+            "app/Enums/MoneyEnums.php",
+            "app/Enums/BudgetEnums.php",
+            "app/Enums/CollectionEnums.php",
+            "app/Enums/ComplaintEnums.php",
+            "app/Enums/AssemblyEnums.php",
+            "app/Enums/DocumentEnums.php",
+            "app/Enums/PlatformEnums.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

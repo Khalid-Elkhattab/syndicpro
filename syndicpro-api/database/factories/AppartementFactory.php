@@ -12,7 +12,7 @@ class AppartementFactory extends Factory
     public function definition(): array
     {
         return [
-            'numero' => str_pad(fake()->numberBetween(1, 99), 2, '0', STR_PAD_LEFT),
+            'numero' => 'A' . fake()->unique()->numberBetween(1000, 9999),
             'etage' => fake()->numberBetween(0, 5),
             'immeuble_id' => Immeuble::factory(),
             'residence_id' => 1,

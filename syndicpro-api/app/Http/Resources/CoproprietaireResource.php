@@ -15,6 +15,8 @@ class CoproprietaireResource extends JsonResource
             'email' => $this->email,
             'phone' => $this->phone,
             'username' => $this->username,
+            'type' => $this->type instanceof \App\Enums\UserType ? $this->type->value : $this->type,
+            'status' => $this->status instanceof \App\Enums\AccountStatus ? $this->status->value : $this->status,
             'is_active' => $this->is_active,
             'nb_appartements' => $this->relationLoaded('appartements')
                 ? $this->appartements->count()

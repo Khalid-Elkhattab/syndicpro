@@ -39,19 +39,32 @@ class CoproprietaireController extends Controller
 
     public function store(StoreCoproprietaireRequest $request): JsonResponse
     {
-        $user = $this->service->create($request->validated());
-        return ApiResponse::created(new CoproprietaireResource($user->load('appartements')), 'Copropriétaire créé avec succès.');
+        $result = $this->service->create($request->validated());
+        $user = $result['user'];
+
+        $message = $result['activation_token']
+            ? 'Copropriétaire créé. Transmettez-lui son lien d’activation (affiché une seule fois).'
+            : 'Copropriétaire créé avec succès.';
+
+        return ApiResponse::success(
+            new CoproprietaireResource($user->load('appartements')),
+            $message,
+            201,
+            $result['activation_token'] ? ['activation_token' => $result['activation_token']] : null
+        );
     }
 
     public function show(int $id): JsonResponse
     {
         $user = $this->service->getWithStats($id);
+
         return ApiResponse::success(new CoproprietaireResource($user));
     }
 
     public function update(UpdateCoproprietaireRequest $request, int $id): JsonResponse
     {
         $user = $this->service->update($id, $request->validated());
+
         return ApiResponse::success(new CoproprietaireResource($user->load('appartements')), 'Copropriétaire mis à jour avec succès.');
     }
 
@@ -66,6 +79,7 @@ class CoproprietaireController extends Controller
         ]);
 
         $user = $this->service->resetPassword($id, $request->input('password'));
+
         return ApiResponse::success(new CoproprietaireResource($user), 'Mot de passe réinitialisé avec succès.');
     }
 
@@ -75,6 +89,7 @@ class CoproprietaireController extends Controller
         $message = $user->is_active
             ? 'Compte réactivé avec succès.'
             : 'Compte désactivé avec succès.';
+
         return ApiResponse::success(new CoproprietaireResource($user), $message);
     }
 }

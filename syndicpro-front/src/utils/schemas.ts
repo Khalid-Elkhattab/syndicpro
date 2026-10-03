@@ -29,9 +29,13 @@ export const coproprietaireSchema = z.object({
     .min(1, 'Le nom d\'utilisateur est obligatoire.')
     .max(50)
     .regex(/^[a-zA-Z0-9._]+$/, 'Lettres, chiffres, points et underscores uniquement.'),
-  password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères.'),
-  password_confirmation: z.string(),
-}).refine((d) => d.password === d.password_confirmation, {
+  // Mot de passe optionnel : vide → compte en attente + lien d'activation.
+  password: z.string().optional().or(z.literal('')),
+  password_confirmation: z.string().optional().or(z.literal('')),
+}).refine((d) => !d.password || d.password.length >= 8, {
+  message: 'Le mot de passe doit contenir au moins 8 caractères.',
+  path: ['password'],
+}).refine((d) => (d.password || '') === (d.password_confirmation || ''), {
   message: 'Les mots de passe ne correspondent pas.',
   path: ['password_confirmation'],
 });
@@ -81,6 +85,25 @@ export const horsBudgetSchema = z.object({
   justificatif: z.instanceof(File).optional().nullable(),
 });
 
+export const ownerSchema = z.object({
+  type: z.enum(['individual', 'company']).optional(),
+  first_name: z.string().max(100).optional().nullable(),
+  last_name: z.string().max(100).optional().nullable(),
+  company_name: z.string().max(150).optional().nullable(),
+  identity_number: z.string().max(30).optional().nullable(),
+  preferred_locale: z.enum(['fr', 'ar']).optional(),
+  internal_notes: z.string().max(1000).optional().nullable(),
+  phones: z.array(z.object({
+    number: z.string().min(1, 'Numéro requis.'),
+    is_whatsapp: z.boolean().optional(),
+    is_primary: z.boolean().optional(),
+  })).optional(),
+  emails: z.array(z.object({
+    email: z.string().email('Email invalide.'),
+    is_primary: z.boolean().optional(),
+  })).optional(),
+});
+
 export type ResidenceFormData = z.infer<typeof residenceSchema>;
 export type ImmeubleFormData = z.infer<typeof immeubleSchema>;
 export type AppartementFormData = z.infer<typeof appartementSchema>;
@@ -91,3 +114,4 @@ export type CompteChargeFormData = z.infer<typeof compteChargeSchema>;
 export type SousChargeFormData = z.infer<typeof sousChargeSchema>;
 export type DepenseFormData = z.infer<typeof depenseSchema>;
 export type HorsBudgetFormData = z.infer<typeof horsBudgetSchema>;
+export type OwnerFormData = z.infer<typeof ownerSchema>;

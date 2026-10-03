@@ -73,7 +73,7 @@ it('syndic can update statut to en_cours', function () {
 
     $response->assertStatus(200);
     $reclamation->refresh();
-    expect($reclamation->statut)->toBe('en_cours');
+    expect($reclamation->statut->value)->toBe('en_cours');
 });
 
 it('syndic can update statut to traite with reponse', function () {
@@ -102,7 +102,7 @@ it('syndic can update statut to traite with reponse', function () {
 
     $response->assertStatus(200);
     $reclamation->refresh();
-    expect($reclamation->statut)->toBe('traite');
+    expect($reclamation->statut->value)->toBe('traite');
     expect($reclamation->reponse_syndic)->toBe('Problème résolu.');
 });
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from '@/lib/motion';
-import { Plus, Edit2, Trash2, Building2, MapPin } from 'lucide-react';
+import { Plus, Edit2, Trash2, Building2, MapPin, Upload } from 'lucide-react';
 import { useResidences, useCreateResidence, useUpdateResidence, useDeleteResidence } from '@/hooks/useResidences';
 import { Modal } from '@/components/ui/Modal';
 import { FormField } from '@/components/ui/FormField';
@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { residenceSchema, type ResidenceFormData } from '@/utils/schemas';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { LotsImportWizard } from '@/components/syndic/LotsImportWizard';
 import type { Residence } from '@/types/entities.types';
 
 export default function ResidencesPage() {
@@ -19,6 +20,7 @@ export default function ResidencesPage() {
   const deleteMutation = useDeleteResidence();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [editing, setEditing] = useState<Residence | null>(null);
   const [deleting, setDeleting] = useState<Residence | null>(null);
@@ -87,13 +89,22 @@ export default function ResidencesPage() {
           <h1 className="text-2xl font-bold text-text-primary">Résidences</h1>
           <p className="text-sm text-text-muted mt-1">Gérez vos résidences et bâtiments</p>
         </div>
-        <button
-          onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Nouvelle résidence
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsImportOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-surface-100 text-text-primary text-sm font-medium rounded-lg hover:bg-surface-200 transition-colors"
+          >
+            <Upload className="w-4 h-4" />
+            Importer CSV
+          </button>
+          <button
+            onClick={openCreate}
+            className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Nouvelle résidence
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -222,6 +233,13 @@ export default function ResidencesPage() {
         confirmLabel="Supprimer"
         isDestructive
       />
+      {isImportOpen && (
+        <LotsImportWizard
+          isOpen={isImportOpen}
+          onClose={() => setIsImportOpen(false)}
+          residences={residences ?? []}
+        />
+      )}
     </div>
   );
 }

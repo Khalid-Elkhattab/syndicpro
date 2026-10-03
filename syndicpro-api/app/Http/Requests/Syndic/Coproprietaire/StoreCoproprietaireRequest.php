@@ -18,7 +18,8 @@ class StoreCoproprietaireRequest extends FormRequest
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'username' => 'required|string|max:50|unique:users,username|regex:/^[a-zA-Z0-9._]+$/',
-            'password' => 'required|string|min:8|confirmed',
+            // Sans mot de passe (recommandé) : compte en attente + lien d’activation à transmettre.
+            'password' => 'nullable|string|min:8|confirmed',
         ];
     }
 
@@ -35,7 +36,6 @@ class StoreCoproprietaireRequest extends FormRequest
             'username.max' => 'Le nom d\'utilisateur ne doit pas dépasser 50 caractères.',
             'username.unique' => 'Ce nom d\'utilisateur est déjà pris.',
             'username.regex' => 'Le nom d\'utilisateur ne doit contenir que des lettres, chiffres, points et underscores.',
-            'password.required' => 'Le mot de passe est obligatoire.',
             'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
             'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
         ];

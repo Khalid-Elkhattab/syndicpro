@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\ActivationController;
 use App\Http\Controllers\Syndic\ResidenceController;
 use App\Http\Controllers\Syndic\ImmeubleController;
 use App\Http\Controllers\Syndic\AppartementController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Syndic\CotisationController;
 use App\Http\Controllers\Syndic\PaiementController;
 use App\Http\Controllers\Syndic\ReclamationController;
 use App\Http\Controllers\Syndic\RapportController;
+use App\Http\Controllers\Syndic\LotImportController;
 use App\Http\Controllers\Syndic\DashboardController as SyndicDashboardController;
 use App\Http\Controllers\Coproprietaires\ReclamationController as CoproReclamationController;
 use App\Http\Controllers\Coproprietaires\DashboardController;
@@ -22,7 +24,20 @@ use App\Http\Controllers\Coproprietaires\AppartementController as CoproApparteme
 use App\Http\Controllers\Coproprietaires\CotisationController as CoproCotisationController;
 use App\Http\Controllers\Coproprietaires\PaiementController as CoproPaiementController;
 use App\Http\Controllers\Syndic\PaiementController as SyndicPaiementController;
+use App\Http\Controllers\Public\ContactController;
+use App\Http\Controllers\Public\DemoRequestController;
+use App\Http\Controllers\Public\SiteConfigController;
 use Illuminate\Support\Facades\Route;
+
+Route::prefix('public')->group(function () {
+    Route::get('site-config', SiteConfigController::class)->name('public.site-config');
+    Route::post('contact', [ContactController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('public.contact.store');
+    Route::post('demo', [DemoRequestController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('public.demo.store');
+});
 
 Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login'])
@@ -33,13 +48,29 @@ Route::prefix('auth')->group(function () {
         ->middleware('auth:sanctum')
         ->name('auth.logout');
 
+    Route::post('activate/{token}', [ActivationController::class, 'activate'])
+        ->middleware('throttle:5,1')
+        ->name('auth.activate');
+
     Route::get('me', [AuthController::class, 'me'])
         ->middleware('auth:sanctum')
         ->name('auth.me');
 });
 
+Route::prefix('portal')->group(function () {
+    Route::post('phone/send', [\App\Http\Controllers\Public\AccessRequestController::class, 'sendCode'])
+        ->middleware('throttle:5,1')
+        ->name('portal.phone.send');
+    Route::post('phone/verify', [\App\Http\Controllers\Public\AccessRequestController::class, 'verifyCode'])
+        ->middleware('throttle:10,1')
+        ->name('portal.phone.verify');
+    Route::post('request-access', [\App\Http\Controllers\Public\AccessRequestController::class, 'submit'])
+        ->middleware('throttle:5,1')
+        ->name('portal.request-access');
+});
+
 Route::prefix('syndic')
-    ->middleware(['auth:sanctum', 'role:syndic'])
+    ->middleware(['auth:sanctum', 'role:syndic,assistant,super_admin'])
     ->group(function () {
 
         Route::apiResource('residences', ResidenceController::class)
@@ -55,6 +86,98 @@ Route::prefix('syndic')
 
         Route::put('appartements/{appartement}/assigner', [AppartementController::class, 'assigner'])
             ->name('syndic.appartements.assigner');
+
+        Route::post('residences/{residence}/lots/import/preview', [LotImportController::class, 'preview'])
+            ->name('syndic.lots.import.preview')
+            ->middleware('throttle:20,1');
+        Route::post('residences/{residence}/lots/import/commit', [LotImportController::class, 'commit'])
+            ->name('syndic.lots.import.commit')
+            ->middleware('throttle:20,1');
+
+        Route::get('access-requests', [\App\Http\Controllers\Syndic\AccessRequestController::class, 'index'])
+            ->name('syndic.access-requests.index');
+        Route::get('access-requests/{accountRequest}', [\App\Http\Controllers\Syndic\AccessRequestController::class, 'show'])
+            ->name('syndic.access-requests.show');
+        Route::post('access-requests/{accountRequest}/review', [\App\Http\Controllers\Syndic\AccessRequestController::class, 'review'])
+            ->name('syndic.access-requests.review');
+
+        Route::get('owners', [\App\Http\Controllers\Syndic\OwnerController::class, 'index'])
+            ->name('syndic.owners.index');
+        Route::post('owners', [\App\Http\Controllers\Syndic\OwnerController::class, 'store'])
+            ->name('syndic.owners.store');
+        Route::get('owners/{owner}', [\App\Http\Controllers\Syndic\OwnerController::class, 'show'])
+            ->name('syndic.owners.show');
+        Route::put('owners/{owner}', [\App\Http\Controllers\Syndic\OwnerController::class, 'update'])
+            ->name('syndic.owners.update');
+        Route::delete('owners/{owner}', [\App\Http\Controllers\Syndic\OwnerController::class, 'destroy'])
+            ->name('syndic.owners.destroy');
+
+        Route::get('lots', [\App\Http\Controllers\Syndic\LotController::class, 'index'])
+            ->name('syndic.lots.index');
+        Route::get('lots/{lot}/transfer-data', [\App\Http\Controllers\Syndic\LotTransferController::class, 'wizardData'])
+            ->name('syndic.lots.transfer-data');
+        Route::post('lots/{lot}/transfer', [\App\Http\Controllers\Syndic\LotTransferController::class, 'run'])
+            ->name('syndic.lots.transfer');
+        Route::get('lots/{lot}/history', [\App\Http\Controllers\Syndic\LotTransferController::class, 'history'])
+            ->name('syndic.lots.history');
+
+        Route::post('quitus', [\App\Http\Controllers\Syndic\QuitusController::class, 'issue'])
+            ->name('syndic.quitus.issue');
+        Route::post('quitus/{quitus}/cancel', [\App\Http\Controllers\Syndic\QuitusController::class, 'cancel'])
+            ->name('syndic.quitus.cancel');
+
+        // Paramètres : réglages généraux
+        Route::get('settings', [\App\Http\Controllers\Syndic\SettingsController::class, 'index'])
+            ->name('syndic.settings.index');
+        Route::put('settings', [\App\Http\Controllers\Syndic\SettingsController::class, 'update'])
+            ->name('syndic.settings.update');
+
+        // Paramètres : types de documents (ajout par le syndic)
+        Route::get('document-types', [\App\Http\Controllers\Syndic\DocumentTypeController::class, 'index'])
+            ->name('syndic.document-types.index');
+        Route::post('document-types', [\App\Http\Controllers\Syndic\DocumentTypeController::class, 'store'])
+            ->name('syndic.document-types.store');
+        Route::put('document-types/{documentType}', [\App\Http\Controllers\Syndic\DocumentTypeController::class, 'update'])
+            ->name('syndic.document-types.update');
+        Route::delete('document-types/{documentType}', [\App\Http\Controllers\Syndic\DocumentTypeController::class, 'destroy'])
+            ->name('syndic.document-types.destroy');
+
+        // Paramètres : documents par résidence (téléversement)
+        Route::get('documents', [\App\Http\Controllers\Syndic\DocumentController::class, 'index'])
+            ->name('syndic.documents.index');
+        Route::post('documents', [\App\Http\Controllers\Syndic\DocumentController::class, 'store'])
+            ->name('syndic.documents.store')
+            ->middleware('throttle:20,1');
+        Route::get('documents/{document}/download', [\App\Http\Controllers\Syndic\DocumentController::class, 'download'])
+            ->name('syndic.documents.download');
+        Route::delete('documents/{document}', [\App\Http\Controllers\Syndic\DocumentController::class, 'destroy'])
+            ->name('syndic.documents.destroy');
+
+        // Paramètres : comptes assistants + matrice de privilèges
+        Route::get('staff/permissions', [\App\Http\Controllers\Syndic\StaffController::class, 'permissions'])
+            ->name('syndic.staff.permissions');
+        Route::get('staff', [\App\Http\Controllers\Syndic\StaffController::class, 'index'])
+            ->name('syndic.staff.index');
+        Route::post('staff', [\App\Http\Controllers\Syndic\StaffController::class, 'store'])
+            ->name('syndic.staff.store');
+        Route::put('staff/{staff}', [\App\Http\Controllers\Syndic\StaffController::class, 'update'])
+            ->name('syndic.staff.update');
+        Route::put('staff/{staff}/toggle-actif', [\App\Http\Controllers\Syndic\StaffController::class, 'toggleActif'])
+            ->name('syndic.staff.toggle-actif');
+        Route::delete('staff/{staff}', [\App\Http\Controllers\Syndic\StaffController::class, 'destroy'])
+            ->name('syndic.staff.destroy');
+
+        // Juridique / recouvrement
+        Route::get('legal/overview', [\App\Http\Controllers\Syndic\LegalController::class, 'overview'])
+            ->name('syndic.legal.overview');
+        Route::get('legal/transfers-without-quitus', [\App\Http\Controllers\Syndic\LegalController::class, 'transfersWithoutQuitus'])
+            ->name('syndic.legal.transfers-without-quitus');
+        Route::get('legal/lawyer-cases', [\App\Http\Controllers\Syndic\LegalController::class, 'lawyerCases'])
+            ->name('syndic.legal.lawyer-cases');
+        Route::post('legal/lawyer-cases', [\App\Http\Controllers\Syndic\LegalController::class, 'storeLawyerCase'])
+            ->name('syndic.legal.lawyer-cases.store');
+        Route::put('legal/lawyer-cases/{lawyerCase}/status', [\App\Http\Controllers\Syndic\LegalController::class, 'updateLawyerCaseStatus'])
+            ->name('syndic.legal.lawyer-cases.status');
 
         Route::apiResource('coproprietaires', CoproprietaireController::class)
             ->names('syndic.coproprietaires');

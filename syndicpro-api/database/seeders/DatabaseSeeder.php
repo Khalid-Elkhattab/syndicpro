@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             CotisationDetailSeeder::class,
             PaiementSeeder::class,
             ReclamationSeeder::class,
+            DocumentTypeSeeder::class,
         ]);
 
         $this->command->info('');

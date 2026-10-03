@@ -43,6 +43,7 @@ export default function CoproprietairesPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isResetOpen, setIsResetOpen] = useState(false);
+  const [activationLink, setActivationLink] = useState<string | null>(null);
   const [editing, setEditing] = useState<User | null>(null);
   const [resetTarget, setResetTarget] = useState<User | null>(null);
   const [drawerUser, setDrawerUser] = useState<User | null>(null);
@@ -75,7 +76,11 @@ export default function CoproprietairesPage() {
         const { password: _pw, password_confirmation: _pw2, ...rest } = payload;
         await updateMutation.mutateAsync({ id: editing.id, ...rest });
       } else {
-        await createMutation.mutateAsync(payload);
+        const response = await createMutation.mutateAsync(payload);
+        const token = (response as unknown as { data?: { meta?: { activation_token?: string } } })?.data?.meta?.activation_token;
+        if (token) {
+          setActivationLink(`${window.location.origin}/activate/${token}`);
+        }
       }
       setIsModalOpen(false);
     } finally {
@@ -208,14 +213,19 @@ export default function CoproprietairesPage() {
             </FormField>
           </div>
           {!editing && (
-            <div className="grid grid-cols-2 gap-4">
-              <FormField label="Mot de passe" error={errors.password?.message} required>
-                <input type="password" {...register('password')} className="w-full px-4 py-2.5 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
-              </FormField>
-              <FormField label="Confirmer le mot de passe" error={errors.password_confirmation?.message} required>
-                <input type="password" {...register('password_confirmation')} className="w-full px-4 py-2.5 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
-              </FormField>
-            </div>
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField label="Mot de passe" error={errors.password?.message}>
+                  <input type="password" {...register('password')} className="w-full px-4 py-2.5 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none" placeholder="Laisser vide → lien d'activation" />
+                </FormField>
+                <FormField label="Confirmer le mot de passe" error={errors.password_confirmation?.message}>
+                  <input type="password" {...register('password_confirmation')} className="w-full px-4 py-2.5 border border-surface-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 outline-none" />
+                </FormField>
+              </div>
+              <p className="text-xs text-text-muted -mt-2">
+                Sans mot de passe (recommandé) : le compte est créé en attente et un lien d'activation à transmettre au copropriétaire s'affiche.
+              </p>
+            </>
           )}
         </form>
       </Modal>
@@ -253,6 +263,25 @@ export default function CoproprietairesPage() {
           />
         </Suspense>
       )}
+
+      <Modal isOpen={!!activationLink} onClose={() => setActivationLink(null)} title="Lien d'activation (usage unique)"
+        footer={
+          <button onClick={() => setActivationLink(null)} className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg">Fermer</button>
+        }
+      >
+        <p className="text-sm text-text-secondary mb-3">
+          Transmettez ce lien au copropriétaire (WhatsApp ou email). Il expire dans 7 jours et ne s'affichera plus.
+        </p>
+        <div className="flex items-center gap-2">
+          <input readOnly value={activationLink ?? ''} className="flex-1 px-3 py-2 text-xs border border-surface-300 rounded-lg bg-surface-50 outline-none" onFocus={(e) => e.target.select()} />
+          <button
+            onClick={() => activationLink && navigator.clipboard.writeText(activationLink)}
+            className="px-3 py-2 text-sm font-medium text-text-primary bg-surface-100 hover:bg-surface-200 rounded-lg"
+          >
+            Copier
+          </button>
+        </div>
+      </Modal>
     </motion.div>
   );
 }

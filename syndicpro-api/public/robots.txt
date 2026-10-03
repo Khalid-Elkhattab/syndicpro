@@ -1,2 +1,9 @@
 User-agent: *
-Disallow:
+Disallow: /syndic/
+Disallow: /coproprietaires/
+Disallow: /admin/
+Disallow: /portal/
+Disallow: /api/
+Disallow: /webhooks/
+
+Sitemap: /sitemap.xml

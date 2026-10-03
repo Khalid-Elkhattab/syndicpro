@@ -41,8 +41,8 @@ export const useCreateCoproprietaire = () => {
       email: string;
       phone?: string;
       username: string;
-      password: string;
-      password_confirmation: string;
+      password?: string;
+      password_confirmation?: string;
     }) => coproprietairesApi.store(payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['coproprietaires'] }),
   });

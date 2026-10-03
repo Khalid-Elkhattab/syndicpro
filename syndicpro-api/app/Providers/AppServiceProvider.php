@@ -24,6 +24,7 @@ use App\Policies\PeriodePolicy;
 use App\Services\CotisationService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -38,6 +39,12 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Blueprint::macro('audit', function () {
+            /** @var Blueprint $this */
+            $this->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $this->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+        });
+
         // Register Observers
         Depense::observe(DepenseObserver::class);
         Paiement::observe(PaiementObserver::class);
@@ -51,6 +58,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Appartement::class, AppartementPolicy::class);
         Gate::policy(User::class, CoproprietairePolicy::class);
         Gate::policy(Periode::class, PeriodePolicy::class);
+        Gate::policy(\App\Models\AccountRequest::class, \App\Policies\AccessRequestPolicy::class);
+        Gate::policy(\App\Models\Owner::class, \App\Policies\OwnerPolicy::class);
 
         RateLimiter::for('financial', fn (Request $request) => Limit::perMinute(20));
     }
