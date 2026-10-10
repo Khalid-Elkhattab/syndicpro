@@ -36,7 +36,7 @@ export interface OwnerListItem {
 }
 
 export interface OwnerSituation {
-  per_lot: { lot_id: number; due: number; paid: number; remaining: number }[];
+  per_lot: { lot_id: number; residence_id: number | null; lot_number: string | null; building: string | null; due: number; paid: number; remaining: number }[];
   total_due: number;
   total_paid: number;
   remaining: number;
@@ -55,6 +55,7 @@ export interface OwnerFile {
     amount: number | string;
     status: string;
     receipt_number: string | null;
+    allocation_receipt_number: string | null;
   }[];
   reminders: {
     id: number;
@@ -86,7 +87,7 @@ export interface OwnerFormData {
 }
 
 export const ownersApi = {
-  index: (params?: { search?: string; per_page?: number; page?: number }) =>
+  index: (params?: { search?: string; per_page?: number; page?: number; residence_ids?: number[] }) =>
     axiosInstance.get<PaginatedResponse<OwnerListItem>>('/api/syndic/owners', { params }),
 
   show: (id: number) =>

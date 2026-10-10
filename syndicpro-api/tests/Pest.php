@@ -1,11 +1,15 @@
 <?php
 
 use App\Models\Building;
+use App\Models\Contribution;
+use App\Models\ContributionLot;
+use App\Models\Due;
 use App\Models\Lot;
 use App\Models\LotOwnership;
 use App\Models\Owner;
 use App\Models\Residence;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -53,6 +57,31 @@ if (! function_exists('targetLot')) {
     }
 }
 
+if (! function_exists('situationDues')) {
+    function situationDues(Owner $owner, Lot $lot, array $amounts, string $from = '2024-01-01'): void
+    {
+        $residence = $lot->residence;
+        $clot = ContributionLot::create([
+            'contribution_id' => Contribution::create([
+                'residence_id' => $residence->id, 'type' => 'syndic', 'name' => 'T',
+                'starts_on' => '2024-01-01', 'ends_on' => '2026-12-31',
+                'calculation_mode' => 'tantieme', 'status' => 'draft',
+            ])->id,
+            'residence_id' => $residence->id, 'lot_id' => $lot->id,
+            'annual_amount' => array_sum($amounts), 'monthly_amount' => $amounts[0],
+        ]);
+        foreach ($amounts as $i => $amount) {
+            $start = Carbon::parse($from)->addMonths($i);
+            Due::create([
+                'residence_id' => $residence->id, 'contribution_lot_id' => $clot->id,
+                'lot_id' => $lot->id, 'owner_id' => $owner->id,
+                'period_start' => $start->copy()->startOfMonth(), 'period_end' => $start->copy()->endOfMonth(),
+                'days' => $start->daysInMonth, 'amount' => $amount,
+                'due_date' => $start->copy()->endOfMonth(), 'status' => 'unpaid',
+            ]);
+        }
+    }
+}
 if (! function_exists('ownLot')) {
     function ownLot(Lot $lot, Owner $owner, array $attrs = []): LotOwnership
     {

@@ -29,6 +29,8 @@ class LotController extends Controller
             'type' => $lot->type->value,
             'type_label' => $lot->type_label,
             'surface' => $lot->surface,
+            'tantieme' => $lot->tantieme,
+            'building_id' => $lot->building_id,
             'building' => $lot->building?->number,
             'current_owner' => $lot->currentOwnerships->first()?->owner?->display_name,
         ]);

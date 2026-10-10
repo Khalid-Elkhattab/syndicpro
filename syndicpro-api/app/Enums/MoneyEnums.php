@@ -24,12 +24,14 @@ enum CalculationMode: string
     use HasLabel;
 
     case Fixed = 'fixed';
+    case PerSurface = 'per_surface';
     case Tantieme = 'tantieme';
 
     public function frenchLabel(): string
     {
         return match ($this) {
             self::Fixed => 'Forfaitaire',
+            self::PerSurface => 'Par surface',
             self::Tantieme => 'Tantièmes',
         };
     }

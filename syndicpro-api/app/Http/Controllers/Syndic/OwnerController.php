@@ -31,6 +31,14 @@ class OwnerController extends Controller
         $search = trim((string) $request->input('search', ''));
         $query = Owner::with(['phones', 'ownerships.lot.building']);
 
+        $residenceIds = array_values(array_filter(array_map(
+            'intval',
+            (array) $request->input('residence_ids', [])
+        )));
+        if ($residenceIds !== []) {
+            $query->whereHas('ownerships.lot', fn ($qq) => $qq->whereIn('residence_id', $residenceIds));
+        }
+
         if ($search !== '') {
             $cin = OwnerService::normalizeIdentity($search);
             $query->where(function ($q) use ($search, $cin) {
@@ -149,7 +157,7 @@ class OwnerController extends Controller
             'owner' => new OwnerResource($owner),
             'situation' => OwnerSituationService::forOwner($owner->id),
             'payments' => Payment::where('owner_id', $owner->id)
-                ->latest('paid_on')->limit(20)->get(['id', 'paid_on', 'method', 'amount', 'status', 'receipt_number']),
+                ->latest('paid_on')->limit(20)->get(['id', 'paid_on', 'method', 'amount', 'status', 'receipt_number', 'allocation_receipt_number']),
             'reminders' => CollectionAction::where('owner_id', $owner->id)
                 ->latest()->limit(20)->get(['id', 'type', 'channel', 'status', 'amount_due', 'sent_at']),
             'documents' => Document::where('owner_id', $owner->id)

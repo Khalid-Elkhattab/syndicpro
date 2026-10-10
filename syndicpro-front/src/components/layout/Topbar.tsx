@@ -1,6 +1,7 @@
 import { Menu, Bell } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
+import { GlobalSearch } from './GlobalSearch';
 
 interface TopbarProps {
   title: string;
@@ -11,7 +12,7 @@ export function Topbar({ title }: TopbarProps) {
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
 
   return (
-    <header className="h-16 bg-white border-b border-surface-200 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30 overflow-hidden">
+    <header className="h-16 bg-white border-b border-surface-200 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
       <div className="flex items-center gap-3 min-w-0">
         <button
           onClick={toggleSidebar}
@@ -24,6 +25,7 @@ export function Topbar({ title }: TopbarProps) {
       </div>
 
       <div className="flex items-center gap-3">
+        <GlobalSearch />
         <button
           className="p-2 rounded-lg text-text-muted hover:bg-surface-100 hover:text-text-primary transition-colors relative"
           aria-label="Notifications"

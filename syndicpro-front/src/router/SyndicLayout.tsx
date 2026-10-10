@@ -1,4 +1,4 @@
-import { LayoutDashboard, Building2, Building, DoorOpen, Users, PiggyBank, FileText, ScrollText, CreditCard, MessageSquare, BarChart3, ArrowLeftRight, Scale, Settings } from 'lucide-react';
+import { LayoutDashboard, Building2, Building, DoorOpen, Users, PiggyBank, FileText, ScrollText, CreditCard, MessageSquare, BarChart3, ArrowLeftRight, Scale, Settings, Coins } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useAuthStore } from '@/store/authStore';
 
@@ -12,6 +12,7 @@ const preloaders: Record<string, () => Promise<unknown>> = {
   '/syndic/budget': () => import('@/pages/syndic/BudgetPage'),
   '/syndic/charges': () => import('@/pages/syndic/ChargesDepensesPage'),
   '/syndic/cotisations': () => import('@/pages/syndic/CotisationsPage'),
+  '/syndic/appels': () => import('@/pages/syndic/ContributionsPage'),
   '/syndic/paiements': () => import('@/pages/syndic/PaiementsPage'),
   '/syndic/reclamations': () => import('@/pages/syndic/reclamations/ReclamationsPage'),
   '/syndic/rapports': () => import('@/pages/syndic/RapportsPage'),
@@ -42,6 +43,7 @@ const allNavigation: NavEntry[] = [
   { name: 'Budget', href: '/syndic/budget', icon: <PiggyBank className="w-5 h-5" />, preload: preloaders['/syndic/budget'] },
   { name: 'Charges & Dépenses', href: '/syndic/charges', icon: <FileText className="w-5 h-5" />, preload: preloaders['/syndic/charges'] },
   { name: 'Cotisations', href: '/syndic/cotisations', icon: <ScrollText className="w-5 h-5" />, preload: preloaders['/syndic/cotisations'] },
+  { name: 'Appels de fonds', href: '/syndic/appels', icon: <Coins className="w-5 h-5" />, preload: preloaders['/syndic/appels'], permission: 'contributions.view' },
   { name: 'Paiements', href: '/syndic/paiements', icon: <CreditCard className="w-5 h-5" />, preload: preloaders['/syndic/paiements'] },
   { name: 'Réclamations', href: '/syndic/reclamations', icon: <MessageSquare className="w-5 h-5" />, badge: 0, preload: preloaders['/syndic/reclamations'] },
   { name: 'Rapports', href: '/syndic/rapports', icon: <BarChart3 className="w-5 h-5" />, preload: preloaders['/syndic/rapports'] },

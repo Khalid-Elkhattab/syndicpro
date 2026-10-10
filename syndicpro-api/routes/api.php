@@ -93,6 +93,10 @@ Route::prefix('syndic')
         Route::post('residences/{residence}/lots/import/commit', [LotImportController::class, 'commit'])
             ->name('syndic.lots.import.commit')
             ->middleware('throttle:20,1');
+        Route::get('residences/{residence}/finance', [\App\Http\Controllers\Syndic\ResidenceFinanceController::class, 'show'])
+            ->name('syndic.residences.finance.show');
+        Route::put('residences/{residence}/finance', [\App\Http\Controllers\Syndic\ResidenceFinanceController::class, 'update'])
+            ->name('syndic.residences.finance.update');
 
         Route::get('access-requests', [\App\Http\Controllers\Syndic\AccessRequestController::class, 'index'])
             ->name('syndic.access-requests.index');
@@ -121,10 +125,38 @@ Route::prefix('syndic')
         Route::get('lots/{lot}/history', [\App\Http\Controllers\Syndic\LotTransferController::class, 'history'])
             ->name('syndic.lots.history');
 
+        Route::post('payments/preview', [\App\Http\Controllers\Syndic\PaymentController::class, 'preview'])
+            ->name('syndic.payments.preview');
+        Route::post('payments', [\App\Http\Controllers\Syndic\PaymentController::class, 'store'])
+            ->name('syndic.payments.store');
+        Route::get('payments/{payment}/receipts/encaissement', [\App\Http\Controllers\Syndic\PaymentController::class, 'receiptEncaissement'])
+            ->name('syndic.payments.receipt-encaissement');
+        Route::get('payments/{payment}/receipts/imputation', [\App\Http\Controllers\Syndic\PaymentController::class, 'receiptImputation'])
+            ->name('syndic.payments.receipt-imputation');
+        Route::post('payments/{payment}/cancel', [\App\Http\Controllers\Syndic\PaymentController::class, 'cancel'])
+            ->name('syndic.payments.cancel');
         Route::post('quitus', [\App\Http\Controllers\Syndic\QuitusController::class, 'issue'])
             ->name('syndic.quitus.issue');
         Route::post('quitus/{quitus}/cancel', [\App\Http\Controllers\Syndic\QuitusController::class, 'cancel'])
             ->name('syndic.quitus.cancel');
+
+        // Cotisations standard / exceptionnelles (moteur contributions + dus).
+        Route::get('residences/{residence}/contributions', [\App\Http\Controllers\Syndic\ContributionController::class, 'index'])
+            ->name('syndic.contributions.index');
+        Route::post('residences/{residence}/contributions', [\App\Http\Controllers\Syndic\ContributionController::class, 'store'])
+            ->name('syndic.contributions.store')
+            ->middleware('throttle:20,1');
+        Route::get('contributions/{contribution}', [\App\Http\Controllers\Syndic\ContributionController::class, 'show'])
+            ->name('syndic.contributions.show');
+        Route::put('contributions/{contribution}', [\App\Http\Controllers\Syndic\ContributionController::class, 'update'])
+            ->name('syndic.contributions.update');
+        Route::delete('contributions/{contribution}', [\App\Http\Controllers\Syndic\ContributionController::class, 'destroy'])
+            ->name('syndic.contributions.destroy');
+        Route::get('contributions/{contribution}/preview', [\App\Http\Controllers\Syndic\ContributionController::class, 'preview'])
+            ->name('syndic.contributions.preview');
+        Route::post('contributions/{contribution}/publish', [\App\Http\Controllers\Syndic\ContributionController::class, 'publish'])
+            ->name('syndic.contributions.publish')
+            ->middleware('throttle:20,1');
 
         // Paramètres : réglages généraux
         Route::get('settings', [\App\Http\Controllers\Syndic\SettingsController::class, 'index'])

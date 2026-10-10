@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\CalculationMode;
 use App\Enums\ContributionStatus;
 use App\Enums\DueStatus;
 use App\Models\Contribution;
@@ -120,19 +121,54 @@ class DueGenerator
         });
     }
 
-    /** @return array<int, float> lot_id => montant annuel */
-    private function annualsPerLot(Contribution $contribution, $lots): array
+    /**
+     * Simulation sans écriture (sauf snapshots) : lignes par lot + totaux.
+     * Sert l'aperçu avant publication ; publish() persiste ensuite.
+     *
+     * @return array{rows: array<int, array{lot_id: int, annual: float, monthly: float}>, annual_total: float, monthly_total: float}
+     */
+    public function previewAnnuals(Contribution $contribution): array
     {
-        if ($contribution->calculation_mode->value === 'fixed') {
-            return $this->fixedAnnuals($contribution, $lots);
+        $lots = Lot::byResidence($contribution->residence_id)->active()->with('building')->get();
+        $annuals = $this->annualsPerLot($contribution, $lots, false);
+
+        $rows = [];
+        foreach ($annuals as $lotId => $annual) {
+            $rows[] = ['lot_id' => $lotId, 'annual' => $annual, 'monthly' => round($annual / 12, 2)];
         }
 
+        return [
+            'rows' => $rows,
+            'annual_total' => round(array_sum(array_column($rows, 'annual')), 2),
+            'monthly_total' => round(array_sum(array_column($rows, 'monthly')), 2),
+        ];
+    }
+
+    /** @return array<int, float> lot_id => montant annuel */
+    private function annualsPerLot(Contribution $contribution, $lots, bool $persist = true): array
+    {
+        $mode = $contribution->calculation_mode instanceof CalculationMode
+            ? $contribution->calculation_mode
+            : CalculationMode::from($contribution->calculation_mode);
+
+        return match ($mode) {
+            // Grille à tranches partagée : fixed = lignes typées, per_surface = lignes par tranche (lot_type null).
+            CalculationMode::Fixed => $this->gridAnnuals($contribution, $lots),
+            CalculationMode::PerSurface => $this->gridAnnuals($contribution, $lots),
+            CalculationMode::Tantieme => $this->tantiemeAnnuals($contribution, $lots, $persist),
+        };
+    }
+
+    private function tantiemeAnnuals(Contribution $contribution, $lots, bool $persist = true): array
+    {
         $totalTantiemes = (float) $lots->sum('tantieme');
         if ($totalTantiemes <= 0) {
             throw new \LogicException('Tantièmes totaux nuls : calcul impossible.');
         }
         $coefficient = (float) $contribution->annual_budget / $totalTantiemes;
-        $contribution->update(['coefficient' => $coefficient]);
+        if ($persist) {
+            $contribution->update(['coefficient' => $coefficient]);
+        }
 
         $out = [];
         foreach ($lots as $lot) {
@@ -142,13 +178,14 @@ class DueGenerator
         return $out;
     }
 
-    private function fixedAnnuals(Contribution $contribution, $lots): array
+    private function gridAnnuals(Contribution $contribution, $lots): array
     {
         $rates = $contribution->fixedRates()->get();
         $out = [];
         foreach ($lots as $lot) {
             // Règle 15 : chaque lot correspond à EXACTEMENT une ligne de grille.
-            $matches = $rates->filter(fn ($r) => $r->lot_type === $lot->type->value
+            // lot_type null = joker (toutes typologies) : tranches de surface pures.
+            $matches = $rates->filter(fn ($r) => ($r->lot_type === null || $r->lot_type === $lot->type->value)
                 && ($r->min_surface === null || (float) $lot->surface >= (float) $r->min_surface)
                 && ($r->max_surface === null || (float) $lot->surface <= (float) $r->max_surface));
             if ($matches->count() !== 1) {

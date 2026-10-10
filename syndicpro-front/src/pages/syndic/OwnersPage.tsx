@@ -1,11 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from '@/lib/motion';
-import { Plus, Edit2, Trash2, Eye, Search, Phone, Mail, Home, Wallet, Receipt, Bell, FileText } from 'lucide-react';
+import { Plus, Edit2, Trash2, Eye, Search, Phone, Mail, Home, Wallet, Receipt, Bell, FileText, Printer, Download, X } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { useResidenceStore } from '@/store/residenceStore';
+import { useResidences } from '@/hooks/useResidences';
 import { useOwners, useOwnerFile, useCreateOwner, useUpdateOwner, useDeleteOwner } from '@/hooks/useOwners';
-import type { OwnerListItem } from '@/api/owners.api';
+import type { OwnerListItem, OwnerFile } from '@/api/owners.api';
+import { paymentsApi, PAYMENT_METHODS, PAYMENT_STATUS_LABELS } from '@/api/payments.api';
+import { EncaisserModal } from '@/components/syndic/EncaisserModal';
 import { Modal } from '@/components/ui/Modal';
 import { FormField } from '@/components/ui/FormField';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -24,13 +29,32 @@ export default function OwnersPage() {
 
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const selectedIds = useResidenceStore((s) => s.selectedIds);
+  const { data: residences } = useResidences();
+  // Sélection partielle → filtre ; « Toutes » (ou chargement) → global.
+  const scopeIds = residences && selectedIds.length > 0 && selectedIds.length < residences.length
+    ? selectedIds
+    : undefined;
   const { data, isLoading, isError, refetch } = useOwners({
     search: search || undefined,
     per_page: 20,
     page,
+    residence_ids: scopeIds,
   });
 
   const [fileId, setFileId] = useState<number | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Lien profond depuis la recherche globale (?dossier=<id>) — même garde que le formulaire.
+  const [lastDossier, setLastDossier] = useState<string | null>(null);
+  const dossierParam = searchParams.get('dossier');
+  if (dossierParam !== lastDossier) {
+    setLastDossier(dossierParam);
+    if (dossierParam && /^\d+$/.test(dossierParam)) {
+      setFileId(Number(dossierParam));
+      setSearchParams({}, { replace: true });
+    }
+  }
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<OwnerListItem | null>(null);
   const [deleting, setDeleting] = useState<OwnerListItem | null>(null);
@@ -129,7 +153,7 @@ export default function OwnersPage() {
         />
       )}
 
-      {fileId && <OwnerFileModal ownerId={fileId} canEdit={can('owners.update')} onClose={() => setFileId(null)} onEdit={(owner) => { setFileId(null); setEditing(owner); setIsFormOpen(true); }} />}
+      {fileId && <OwnerFileModal ownerId={fileId} canEdit={can('owners.update')} canRecord={can('payments.create')} canCancel={can('payments.cancel')} onClose={() => setFileId(null)} onEdit={(owner) => { setFileId(null); setEditing(owner); setIsFormOpen(true); }} />}
 
       <OwnerFormModal
         isOpen={isFormOpen}
@@ -161,20 +185,75 @@ const FILE_TABS: { key: FileTab; label: string; icon: React.ReactNode }[] = [
   { key: 'documents', label: 'Documents', icon: <FileText className="w-4 h-4" /> },
 ];
 
-function OwnerFileModal({ ownerId, canEdit, onClose, onEdit }: {
+function OwnerFileModal({ ownerId, canEdit, canRecord, canCancel, onClose, onEdit }: {
   ownerId: number;
   canEdit: boolean;
+  canRecord: boolean;
+  canCancel: boolean;
   onClose: () => void;
   onEdit: (owner: OwnerListItem) => void;
 }) {
   const [tab, setTab] = useState<FileTab>('infos');
+  const [encaisserOpen, setEncaisserOpen] = useState(false);
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'validated' | 'cancelled'>('all');
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const { data: file, isLoading, isError, refetch } = useOwnerFile(ownerId);
+
+  useEffect(() => {
+    const done = () => document.body.classList.remove('print-dossier');
+    window.addEventListener('afterprint', done);
+    return () => window.removeEventListener('afterprint', done);
+  }, []);
+
+  const printDossier = () => {
+    document.body.classList.add('print-dossier');
+    window.print();
+  };
+
+  const openReceipt = async (paymentId: number, kind: 'encaissement' | 'imputation') => {
+    const url = `/api/syndic/payments/${paymentId}/receipts/${kind}`;
+    const blobUrl = await paymentsApi.receiptBlob(url);
+    window.open(blobUrl, '_blank');
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+  };
+
+  const doCancel = async (paymentId: number) => {
+    if (!cancelReason.trim()) { setCancelError('Motif obligatoire.'); return; }
+    setBusy(true);
+    setCancelError(null);
+    try {
+      await paymentsApi.cancel(paymentId, cancelReason.trim());
+      setCancellingId(null);
+      setCancelReason('');
+      refetch();
+    } catch (err: unknown) {
+      const resp = (err as { response?: { data?: { message?: string } } }).response?.data;
+      setCancelError(resp?.message ?? 'Erreur inconnue');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const payments = (file?.payments ?? []).filter((p) => paymentFilter === 'all' || p.status === paymentFilter);
 
   return (
     <Modal isOpen onClose={onClose} title={file ? `Dossier — ${file.owner.display_name}` : 'Dossier propriétaire'} size="lg"
       footer={
         <>
           <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface-100 hover:bg-surface-200 rounded-lg">Fermer</button>
+          {file && (
+            <button onClick={printDossier} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-text-secondary bg-surface-100 hover:bg-surface-200 rounded-lg">
+              <Printer className="w-4 h-4" /> Imprimer
+            </button>
+          )}
+          {canRecord && file && (
+            <button onClick={() => setEncaisserOpen(true)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-success hover:opacity-90 rounded-lg">
+              <Wallet className="w-4 h-4" /> Encaisser
+            </button>
+          )}
           {canEdit && file && (
             <button onClick={() => onEdit(file.owner)} className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg">Modifier</button>
           )}
@@ -186,8 +265,13 @@ function OwnerFileModal({ ownerId, canEdit, onClose, onEdit }: {
       ) : isError || !file ? (
         <ErrorState message="Impossible de charger le dossier." onRetry={refetch} />
       ) : (
-        <div>
-          <div className="flex gap-1 mb-4 border-b border-surface-200 overflow-x-auto">
+        <div className="dossier-print" data-owner-file={file.owner.id}>
+          <div className="hidden print:block mb-4">
+            <h2 className="text-xl font-bold">Dossier copropriétaire — {file.owner.display_name}</h2>
+            <p className="text-sm text-text-muted">CIN/RC : {file.owner.identity_number ?? '—'} · Imprimé le {new Date().toLocaleDateString('fr-MA')}</p>
+          </div>
+          <div className="hidden print:block"><DossierPrintView file={file} /></div>
+          <div className="flex gap-1 mb-4 border-b border-surface-200 overflow-x-auto print:hidden">
             {FILE_TABS.map((t) => (
               <button key={t.key} onClick={() => setTab(t.key)}
                 className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 -mb-px whitespace-nowrap ${tab === t.key ? 'border-brand-600 text-brand-600' : 'border-transparent text-text-muted hover:text-text-primary'}`}>
@@ -196,6 +280,7 @@ function OwnerFileModal({ ownerId, canEdit, onClose, onEdit }: {
             ))}
           </div>
 
+          <div className="print:hidden">
           {tab === 'infos' && (
             <div className="grid grid-cols-2 gap-4 text-sm">
               <InfoRow label="Nom complet" value={file.owner.display_name} />
@@ -244,7 +329,7 @@ function OwnerFileModal({ ownerId, canEdit, onClose, onEdit }: {
               </div>
               {file.situation.per_lot.map((l) => (
                 <div key={l.lot_id} className="p-3 border border-surface-200 rounded-lg text-sm flex justify-between">
-                  <span>Lot #{l.lot_id}</span>
+                  <span className="font-medium">Lot {l.lot_number ?? `#${l.lot_id}`}{l.building ? ` (imm. ${l.building})` : ''}</span>
                   <span>Dû {l.due.toLocaleString('fr-MA')} · Payé {l.paid.toLocaleString('fr-MA')} · <strong>Reste {l.remaining.toLocaleString('fr-MA')}</strong></span>
                 </div>
               ))}
@@ -253,11 +338,53 @@ function OwnerFileModal({ ownerId, canEdit, onClose, onEdit }: {
 
           {tab === 'paiements' && (
             <div className="space-y-2">
-              {!file.payments.length && <p className="text-sm text-text-muted">Aucun paiement.</p>}
-              {file.payments.map((p) => (
-                <div key={p.id} className="p-3 border border-surface-200 rounded-lg text-sm flex justify-between">
-                  <span>{p.paid_on} · {p.method} {p.receipt_number ? `· ${p.receipt_number}` : ''}</span>
-                  <span className="font-medium">{Number(p.amount).toLocaleString('fr-MA')} MAD · {p.status}</span>
+              <div className="flex gap-2 text-xs print:hidden">
+                {(['all', 'validated', 'cancelled'] as const).map((f) => (
+                  <button key={f} onClick={() => setPaymentFilter(f)}
+                    className={`px-2.5 py-1 rounded-full border ${paymentFilter === f ? 'bg-brand-600 text-white border-brand-600' : 'border-surface-300 text-text-muted'}`}>
+                    {f === 'all' ? 'Tous' : PAYMENT_STATUS_LABELS[f]}
+                  </button>
+                ))}
+              </div>
+              {!payments.length && <p className="text-sm text-text-muted">Aucun paiement.</p>}
+              {payments.map((p) => (
+                <div key={p.id}>
+                  <div className="p-3 border border-surface-200 rounded-lg text-sm flex justify-between items-center gap-2">
+                    <span>{p.paid_on} · {PAYMENT_METHODS.find((m) => m.value === p.method)?.label ?? p.method}
+                      {p.receipt_number ? <span className="font-mono text-xs ml-1">· {p.receipt_number}</span> : ''}
+                      {p.allocation_receipt_number ? <span className="font-mono text-xs ml-1">· {p.allocation_receipt_number}</span> : ''}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <span className="font-medium">{Number(p.amount).toLocaleString('fr-MA')} MAD · {PAYMENT_STATUS_LABELS[p.status] ?? p.status}</span>
+                      {p.status === 'validated' && (
+                        <>
+                          <button onClick={() => openReceipt(p.id, 'encaissement')} title="Reçu d’encaissement" className="p-1.5 rounded-lg hover:bg-surface-100 text-text-muted hover:text-brand-600 print:hidden">
+                            <Download className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => openReceipt(p.id, 'imputation')} title="Reçu d’imputation" className="p-1.5 rounded-lg hover:bg-surface-100 text-text-muted hover:text-brand-600 print:hidden">
+                            <Receipt className="w-4 h-4" />
+                          </button>
+                          {canCancel && (
+                            <button onClick={() => { setCancellingId(p.id); setCancelReason(''); setCancelError(null); }} title="Annuler" className="p-1.5 rounded-lg hover:bg-danger-light text-text-muted hover:text-danger print:hidden">
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </span>
+                  </div>
+                  {cancellingId === p.id && (
+                    <div className="mt-1 p-3 border border-danger-border bg-danger-light/30 rounded-lg text-sm space-y-2">
+                      <div className="font-medium text-danger">Annuler ce paiement ? Les dus seront recalculés.</div>
+                      <input value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} placeholder="Motif obligatoire (ex. doublon, erreur de saisie)"
+                        className="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-danger" />
+                      {cancelError && <div className="text-danger text-xs">{cancelError}</div>}
+                      <div className="flex gap-2">
+                        <button onClick={() => doCancel(p.id)} disabled={busy} className="px-3 py-1.5 text-xs font-medium text-white bg-danger rounded-lg disabled:opacity-50">Confirmer l’annulation</button>
+                        <button onClick={() => setCancellingId(null)} className="px-3 py-1.5 text-xs font-medium text-text-secondary bg-surface-100 rounded-lg">Retour</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -286,9 +413,60 @@ function OwnerFileModal({ ownerId, canEdit, onClose, onEdit }: {
               ))}
             </div>
           )}
+          </div>
         </div>
       )}
+      {encaisserOpen && file && (
+        <EncaisserModal
+          ownerId={file.owner.id}
+          ownerName={file.owner.display_name}
+          properties={file.owner.properties ?? []}
+          situation={file.situation}
+          onClose={() => setEncaisserOpen(false)}
+          onRecorded={() => refetch()}
+        />
+      )}
     </Modal>
+  );
+}
+
+function DossierPrintView({ file }: { file: OwnerFile }) {
+  const fmt = (n: number | string) => `${Number(n).toLocaleString('fr-MA')} MAD`;
+  return (
+    <div className="text-sm space-y-4">
+      <section>
+        <h3 className="font-bold mb-1">Biens</h3>
+        {file.owner.properties?.map((p, i) => (
+          <div key={i}>Lot {p.lot_number ?? `#${p.lot_id}`}{p.building ? ` (imm. ${p.building})` : ''} — {p.share_percent}% · depuis {p.started_on}{p.ended_on ? ` → ${p.ended_on}` : ' (actuel)'}</div>
+        )) ?? <div>—</div>}
+      </section>
+      <section>
+        <h3 className="font-bold mb-1">Situation</h3>
+        <div>Total dû : {fmt(file.situation.total_due)} · Payé : {fmt(file.situation.total_paid)} · <strong>Reste : {fmt(file.situation.remaining)}</strong> · En retard : {fmt(file.situation.overdue)}</div>
+        <div>Plus ancien impayé : {file.situation.oldest_unpaid ?? '—'} · Dernier paiement : {file.situation.last_payment_on ?? '—'}</div>
+        {file.situation.per_lot.map((l) => (
+          <div key={l.lot_id}>Lot {l.lot_number ?? `#${l.lot_id}`}{l.building ? ` (imm. ${l.building})` : ''} — Dû {fmt(l.due)} · Payé {fmt(l.paid)} · <strong>Reste {fmt(l.remaining)}</strong></div>
+        ))}
+      </section>
+      <section>
+        <h3 className="font-bold mb-1">Paiements</h3>
+        {file.payments.length ? file.payments.map((p) => (
+          <div key={p.id}>{p.paid_on} · {PAYMENT_METHODS.find((m) => m.value === p.method)?.label ?? p.method} · {fmt(p.amount)} · {PAYMENT_STATUS_LABELS[p.status] ?? p.status}{p.receipt_number ? ` · ${p.receipt_number}` : ''}{p.allocation_receipt_number ? ` · ${p.allocation_receipt_number}` : ''}</div>
+        )) : <div>—</div>}
+      </section>
+      <section>
+        <h3 className="font-bold mb-1">Relances</h3>
+        {file.reminders.length ? file.reminders.map((r) => (
+          <div key={r.id}>{r.type} · {r.channel} · {fmt(r.amount_due)} · {r.status}</div>
+        )) : <div>—</div>}
+      </section>
+      <section>
+        <h3 className="font-bold mb-1">Documents</h3>
+        {file.documents.length ? file.documents.map((d) => (
+          <div key={d.id}>{d.title} · {d.type}{d.number ? ` · ${d.number}` : ''}</div>
+        )) : <div>—</div>}
+      </section>
+    </div>
   );
 }
 

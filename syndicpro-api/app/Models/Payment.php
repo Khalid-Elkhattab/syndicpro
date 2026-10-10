@@ -23,7 +23,7 @@ class Payment extends Model implements HasMedia
     protected $fillable = [
         'residence_id', 'owner_id', 'lot_id', 'bank_account_id', 'bank_id',
         'paid_on', 'method', 'document_number', 'amount', 'allocation_mode',
-        'status', 'source', 'receipt_number', 'verification_token', 'receipt_sent_at',
+        'status', 'source', 'receipt_number', 'allocation_receipt_number', 'verification_token', 'receipt_sent_at',
         'validated_by', 'validated_at', 'rejection_reason', 'cancelled_by',
         'cancelled_at', 'cancellation_reason', 'notes', 'created_by', 'updated_by',
     ];
@@ -56,6 +56,16 @@ class Payment extends Model implements HasMedia
     public function owner(): BelongsTo
     {
         return $this->belongsTo(Owner::class);
+    }
+
+    public function residence(): BelongsTo
+    {
+        return $this->belongsTo(Residence::class);
+    }
+
+    public function validator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'validated_by');
     }
 
     public function allocations(): HasMany

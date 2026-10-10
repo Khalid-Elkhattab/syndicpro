@@ -216,3 +216,45 @@ body {
   0%, 100% { transform: scale(1); opacity: 0.5; }
   50% { transform: scale(1.5); opacity: 0; }
 }
+
+/* Impression du dossier propriétaire : seule la modale, tout déplié, sans chrome. */
+@media print {
+  body.print-dossier aside,
+  body.print-dossier header {
+    display: none !important;
+  }
+  body.print-dossier .overflow-clip,
+  body.print-dossier .overflow-y-auto,
+  body.print-dossier .overflow-hidden,
+  body.print-dossier main {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  body.print-dossier main .p-6 {
+    padding: 0 !important;
+  }
+  body.print-dossier main .p-8 > *:not(.modal-overlay) {
+    display: none !important;
+  }
+  body.print-dossier .modal-overlay {
+    position: static !important;
+    display: block !important;
+    padding: 0 !important;
+    z-index: auto !important;
+  }
+  body.print-dossier .modal-backdrop,
+  body.print-dossier .modal-head,
+  body.print-dossier .modal-footer {
+    display: none !important;
+  }
+  body.print-dossier .modal-dialog {
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  body.print-dossier .modal-body {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}

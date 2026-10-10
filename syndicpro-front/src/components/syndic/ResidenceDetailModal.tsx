@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Building, DoorOpen, MapPin } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { useResidence } from '@/hooks/useResidences';
+import { ResidenceFinanceTab } from '@/components/syndic/ResidenceFinanceTab';
 
 interface Props {
   residenceId: number | null;
@@ -13,6 +15,7 @@ interface Props {
  */
 export function ResidenceDetailModal({ residenceId, onClose }: Props) {
   const { data: residence, isLoading } = useResidence(residenceId ?? 0);
+  const [tab, setTab] = useState<'lots' | 'finance'>('lots');
   const immeubles = residence?.immeubles ?? [];
   const totalLots = immeubles.reduce((n, im) => n + (im.appartements?.length ?? 0), 0);
   const totalTantiemes = immeubles.reduce(
@@ -61,7 +64,30 @@ export function ResidenceDetailModal({ residenceId, onClose }: Props) {
             ))}
           </div>
 
-          {immeubles.length === 0 ? (
+          <div className="flex gap-2 border-b border-surface-200">
+            {(
+              [
+                ['lots', 'Bâtiments & lots'],
+                ['finance', 'Paramètres financiers'],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                  tab === key
+                    ? 'border-brand-600 text-brand-600'
+                    : 'border-transparent text-text-muted hover:text-text-primary'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {tab === 'finance' && residenceId !== null ? (
+            <ResidenceFinanceTab residenceId={residenceId} />
+          ) : immeubles.length === 0 ? (
             <p className="text-sm text-text-muted text-center py-4">
               Aucun bâtiment pour le moment — utilisez « Importer CSV » pour ajouter des bâtiments et des lots.
             </p>

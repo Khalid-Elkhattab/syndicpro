@@ -18,6 +18,7 @@ const OwnersPage = lazy(() => import('@/pages/syndic/OwnersPage'));
 const BudgetPage = lazy(() => import('@/pages/syndic/BudgetPage'));
 const ChargesDepensesPage = lazy(() => import('@/pages/syndic/ChargesDepensesPage'));
 const CotisationsPage = lazy(() => import('@/pages/syndic/CotisationsPage'));
+const ContributionsPage = lazy(() => import('@/pages/syndic/ContributionsPage'));
 const PaiementsPage = lazy(() => import('@/pages/syndic/PaiementsPage'));
 const ReclamationsPage = lazy(() => import('@/pages/syndic/reclamations/ReclamationsPage'));
 const RapportsPage = lazy(() => import('@/pages/syndic/RapportsPage'));
@@ -91,6 +92,7 @@ function App() {
             <Route path="budget" element={<BudgetPage />} />
             <Route path="charges" element={<ChargesDepensesPage />} />
             <Route path="cotisations" element={<CotisationsPage />} />
+            <Route path="appels" element={<ContributionsPage />} />
             <Route path="paiements" element={<PaiementsPage />} />
             <Route path="reclamations" element={<ReclamationsPage />} />
             <Route path="rapports" element={<RapportsPage />} />

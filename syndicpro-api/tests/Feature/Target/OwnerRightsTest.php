@@ -91,3 +91,20 @@ it('refuses to delete an owner who still holds a lot or is a promoter', function
     $free2 = Owner::factory()->create();
     $this->actingAs($assistant)->deleteJson("/api/syndic/owners/{$free2->id}")->assertStatus(403);
 });
+
+it('filters owners by residence_ids', function () {
+    [$syndic, $residenceA] = ownerRightsFixture();
+    $residenceB = targetResidence();
+    $ownerB = Owner::factory()->create();
+    ownLot(targetLot($residenceB), $ownerB);
+
+    $all = $this->actingAs($syndic)->getJson('/api/syndic/owners')->assertStatus(200);
+    expect($all->json('meta.total'))->toBe(2);
+
+    $filtered = $this->actingAs($syndic)->getJson('/api/syndic/owners?'.http_build_query(['residence_ids' => [$residenceB->id]]))->assertStatus(200);
+    expect($filtered->json('meta.total'))->toBe(1);
+    expect($filtered->json('data.0.id'))->toBe($ownerB->id);
+
+    $none = $this->actingAs($syndic)->getJson('/api/syndic/owners?'.http_build_query(['residence_ids' => [999999]]))->assertStatus(200);
+    expect($none->json('meta.total'))->toBe(0);
+});

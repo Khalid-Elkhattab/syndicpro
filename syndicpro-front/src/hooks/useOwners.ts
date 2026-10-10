@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ownersApi, type OwnerFormData } from '@/api/owners.api';
 
-export const useOwners = (params?: { search?: string; per_page?: number; page?: number }) =>
+export const useOwners = (params?: { search?: string; per_page?: number; page?: number; residence_ids?: number[] }) =>
   useQuery({
     queryKey: ['owners', params],
     queryFn: async () => {

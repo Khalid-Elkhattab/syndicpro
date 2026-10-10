@@ -33,6 +33,7 @@ class AllocationService
                 }
             } else {
                 $dues = Due::where('owner_id', $payment->owner_id)
+                    ->where('residence_id', $payment->residence_id)
                     ->where('status', '!=', 'cancelled')
                     ->where('status', '!=', 'paid')
                     ->orderBy('period_start')

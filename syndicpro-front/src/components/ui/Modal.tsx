@@ -50,20 +50,20 @@ export function Modal({ isOpen, onClose, title, size = 'md', children, footer }:
   if (!isOpen && !isClosing) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-200 ${isClosing ? 'opacity-0' : 'opacity-100'}`}
+        className={`modal-backdrop absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-200 ${isClosing ? 'opacity-0' : 'opacity-100'}`}
         onClick={handleClose}
       />
       <div
-        className={`relative w-full ${widthClass} bg-white rounded-xl shadow-modal transition-all duration-200 ${
+        className={`modal-dialog relative w-full ${widthClass} bg-white rounded-xl shadow-modal transition-all duration-200 ${
           isClosing ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'
         }`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-200">
+        <div className="modal-head flex items-center justify-between px-6 py-4 border-b border-surface-200">
           <h2 id="modal-title" className="text-lg font-semibold text-text-primary">{title}</h2>
           <button
             onClick={handleClose}
@@ -73,11 +73,11 @@ export function Modal({ isOpen, onClose, title, size = 'md', children, footer }:
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
+        <div className="modal-body px-6 py-4 max-h-[60vh] overflow-y-auto">
           {children}
         </div>
         {footer && (
-          <div className="px-6 py-4 border-t border-surface-200 flex justify-end gap-3">
+          <div className="modal-footer px-6 py-4 border-t border-surface-200 flex justify-end gap-3">
             {footer}
           </div>
         )}

@@ -11,6 +11,7 @@ use App\Models\LotTransfer;
 use App\Models\Owner;
 use App\Services\OwnerSituationService;
 use App\Services\SettingService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -46,7 +47,7 @@ class LegalController extends Controller
             }
 
             $monthsLate = $situation['oldest_unpaid']
-                ? max(0, (int) today()->diffInMonths($situation['oldest_unpaid']->startOfDay()))
+                ? max(0, (int) today()->diffInMonths(Carbon::parse($situation['oldest_unpaid'])->startOfDay()))
                 : 0;
 
             $existingCase = LawyerCase::where('owner_id', $ownerId)

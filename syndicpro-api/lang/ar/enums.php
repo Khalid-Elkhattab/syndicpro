@@ -40,7 +40,7 @@ return [
     'App\Enums\QuitusStatus' => ['valid' => 'صالح', 'used' => 'مستعمل', 'expired' => 'منتهي', 'cancelled' => 'ملغى'],
     'App\Enums\SaleStatus' => ['unsold' => 'غير مباع', 'sold' => 'مباع'],
     'App\Enums\ContributionType' => ['syndic' => 'سنديك', 'exceptional' => 'استثنائية'],
-    'App\Enums\CalculationMode' => ['fixed' => 'جزافي', 'tantieme' => 'حصص'],
+    'App\Enums\CalculationMode' => ['fixed' => 'جزافي', 'per_surface' => 'حسب المساحة', 'tantieme' => 'حصص'],
     'App\Enums\ContributionStatus' => ['draft' => 'مسودة', 'published' => 'منشورة', 'cancelled' => 'ملغاة'],
     'App\Enums\DueStatus' => ['unpaid' => 'غير مؤدى', 'partial' => 'جزئي', 'paid' => 'مؤدى', 'cancelled' => 'ملغى'],
     'App\Enums\PaymentMethod' => [

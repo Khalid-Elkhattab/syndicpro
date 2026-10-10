@@ -8,6 +8,7 @@ use App\Enums\ContributionType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
@@ -59,5 +60,19 @@ class Contribution extends Model
     public function residence(): BelongsTo
     {
         return $this->belongsTo(Residence::class);
+    }
+
+    public function buildings(): BelongsToMany
+    {
+        return $this->belongsToMany(Building::class, 'contribution_buildings');
+    }
+
+    public function isDraft(): bool
+    {
+        $status = $this->status instanceof ContributionStatus
+            ? $this->status
+            : ContributionStatus::tryFrom((string) $this->status);
+
+        return $status === ContributionStatus::Draft;
     }
 }

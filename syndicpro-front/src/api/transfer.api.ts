@@ -52,6 +52,9 @@ export const transferApi = {
       number: string;
       type: string;
       type_label: string;
+      surface: number | string | null;
+      tantieme: number | string | null;
+      building_id: number;
       building: string | null;
       current_owner: string | null;
     }[]>>('/api/syndic/lots', { params }),
